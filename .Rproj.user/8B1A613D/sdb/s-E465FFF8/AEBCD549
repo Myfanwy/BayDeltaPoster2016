@@ -1,0 +1,28 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1476305597667.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "AEBCD549",
+    "lastKnownWriteTime" : 4440270336,
+    "last_content_update" : 1476305597667,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "cj3zm3bfs3",
+        "caption" : "w2dups",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=w2dups&cache_key=cj3zm3bfs3",
+        "displayedObservations" : 60,
+        "environment" : "",
+        "object" : "w2dups",
+        "totalObservations" : 60,
+        "variables" : 9
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

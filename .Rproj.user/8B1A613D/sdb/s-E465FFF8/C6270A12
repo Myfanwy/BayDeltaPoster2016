@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "#  Residence Time #\nlibrary(ybp)\nlibrary(fishtrackr)\nlibrary(dplyr)\nlibrary(lubridate)\n# Exploring simultaneous detections ---------------------------------------\n\nf <- all69khz\nf$year <- year(f$DateTagged)\n\nf <- filter(f, year == 2012)\n\nf <- select(f, -year)\n\nf2 <- fishpaths(f, f$TagID, f$Station)\nhead(f2)\n\nf2 <- f2 %>% \n  group_by(TagID) %>% \n  arrange(TagID, arrival) %>% \n  filter(Sp == \"wst\")\n\nw2 <- filter(f, TagID == 2844)\nhead(w2)\nw2 <- filter(w2, Station == 'BCE' | Station == \"BCW\")\nw2 <- arrange(w2, DateTimeUTC)\nw2$DateTimeUTC[390] - w2$DateTimeUTC[1] # detections span 23.4 days\n\n## Find simultaneous detections and count them\nw2dups <- w2[duplicated(w2$DateTimeUTC), ] # this pulled all the BCE detections - there are 60 matching BCW detections to these\nduppaths <- fishpaths(w2dups, w2dups$TagID, w2dups$Station)\nduppaths$residence = duppaths$departure - duppaths$arrival\n\n# First calculate total residence time with the duplicate detections\n\nhead(w2)\nw2paths <- fishpaths(w2, w2$TagID, w2$Station)\nhead(w2paths)\nw2paths$residence = w2paths$departure - w2paths$arrival\ntotal = sum(w2paths$residence)\ntotal # total monitor residence of 707 minutes, or 0.49 days\n\n# and without\nw22 <- w2[!duplicated(w2$DateTimeUTC), ]\nw22paths <- fishpaths(w22, w22$TagID, w22$Station)\nw22paths$residence = w22paths$departure - w22paths$arrival\ntotal_sansdups = sum(w22paths$residence)\nunits(total_sansdups) <- \"days\"\ntotal_sansdups  # total monitor residence of 0.48 days\n\ntotal - total_sansdups\n# why on earth would filtering duplicate detections lead to a difference of 13.5 minutes??\n\n\n#  Residence calculation plan:\n\n# Get final detection points for each fish\n# in 2012, RSTR or Base_TD is an acceptable final detection point for exiting the Bypass\n# for 2013 on, must be BCE/W/2\n\nsumary <- f %>% \n  arrange(DateTimeUTC) %>% \n  group_by(TagID)  %>% \n  slice(c(1, length(DateTimeUTC)))\n  \nfirstlast <- sumary %>% \n  group_by(TagID) %>% \n  mutate(first = Station[1], last = Station[2]) %>% \n  filter(!duplicated(TagID)) %>% \n  select(TagID, Sp, year, first, last)\nhead(firstlast)\n\nfirstlast %>% \n  group_by(year, Sp, last) %>% \n  summarise(count = n())\n\n# now that we have final detection locations, need to filter the fish that \"exited\" the Bypass vs. those that did not, then calculate residence times.\n\n\n\n\n\n\n  mutate(first = test$Station[test$DateTimeUTC == min(test$DateTimeUTC)], last = test$Station[test$DateTimeUTC == max(test$DateTimeUTC)]) # that works; so for some reason it's not actually grouping by the TagID when you give it the full dataset\n\nhead(sumary) \n\nsumary <- f %>% \n  arrange_(f$DateTimeUTC) %>% \n  group_by_(f$TagID)  %>% \n  mutate_(f$first = f$Station[f$DateTimeUTC == min(f$DateTimeUTC)], f$last = f$Station[f$DateTimeUTC == max(f$DateTimeUTC)]) \n\nsumary <- tapply(f$DateTimeUTC, f$TagID, FUN=min)\n\n",
+    "created" : 1476304759492.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3713432710",
+    "id" : "C6270A12",
+    "lastKnownWriteTime" : 1476309420,
+    "last_content_update" : 1476309420466,
+    "path" : "~/Dropbox/GitHubRepos/BayDeltaPoster2016/R/residence_calcs.R",
+    "project_path" : "R/residence_calcs.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
