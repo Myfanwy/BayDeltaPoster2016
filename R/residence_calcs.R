@@ -119,6 +119,7 @@ firstlast <- f2 %>%
   arrange(arrival, departure) %>% 
   slice(c(1, length(departure)))  # assuming that worked, can now group by TagID and calculate total residence
 
+# Summarizing total residence by species and Tagging Season
 meanres <- firstlast %>% 
   group_by(TagID, year) %>% 
   mutate(totalres = departure[2] - arrival[1], avgres = mean(totalres)) %>% 
