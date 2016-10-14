@@ -9,11 +9,26 @@ f <- all69khz
 f$year <- year(f$DateTagged)
 
 f <- filter(f, year == 2012)
-
+f <- filter(f, TagID == 2844)
 f <- select(f, -year)
 
 f2 <- fishpaths(f, f$TagID, f$Station)
 head(f2)
+
+# do same, but filter duplicate detections first
+fsdups <- filter(f, !duplicated(DateTimeUTC))
+f3 <- fishpaths(fsdups, fsdups$TagID, fsdups$Station)
+
+identical(f2, f3)
+
+f2$residence = f2$departure - f2$arrival
+f3$residence = f3$departure - f3$arrival
+units(f2$residence) <- "days"
+units(f3$residence) <- "days"
+
+f2$res_runsum = cumsum(as.numeric(f2$residence))
+f3$res_runsum = cumsum(as.numeric(f3$residence))
+
 
 f2 <- f2 %>% 
   group_by(TagID) %>% 
@@ -52,8 +67,80 @@ total - total_sansdups
 # why on earth would filtering duplicate detections lead to a difference of 13.5 minutes??
 
 
-#  Residence calculation plan:
+## From fishpaths dataframe: want to filter for duplicate arrival times.  If there are duplicates, look in the departure column for the same row.  Keep the duplicate arrival that has a later departure time, and discard the duplicate that has an earlier departure time.
 
+f <- all69khz
+f$year <- year(f$DateTagged)
+
+f <- filter(f, year == 2012)
+f <- filter(f, TagID == 2844)
+f <- select(f, -year)
+
+f2 <- fishpaths(f, f$TagID, f$Station)
+head(f2) # this dataframe contains duplicate arrival times.
+
+# This code groups the dataframe by arrival (so if there are any duplicates, it will be grouped by them) and slices out the rows that have the maximum departure
+maxdups <- f2 %>% 
+  group_by(arrival) %>% 
+  slice(which.max(departure))
+
+# filtering out the encounters at the gate that are contained within other encounters, or at least merging/selecting them:
+
+# group the receivers first (BC_joint, BC2_joint)
+
+f <- all69khz_grouped
+f$year <- year(f$DateTagged)
+
+f <- filter(f, year == 2012)
+f <- filter(f, TagID == 2844)
+f <- select(f, -year)
+
+f2 <- fishpaths(f, f$TagID, f$Station)
+head(f2) # this dataframe doesn't contain duplicate arrival times, because the pre-grouping took care of them
+
+# One method of removing overlapping periods, if it comes to that:
+rm_overlaps <- f2 %>% 
+  group_by(TagID) %>% 
+  arrange(arrival, departure) %>% 
+  mutate(indx = c(0, cumsum(as.numeric(lead(arrival)) >
+                             cummax(as.numeric(departure)))[-n()] )) %>% 
+  group_by(TagID, indx) %>% 
+  summarise(arrival = first(arrival), departure = last(departure))
+
+#  Now calculate residence based upon first arrival in the Toe DRain and final departure in the toe drain:
+library(beepr)
+f <- all69khz_grouped
+f2 <- fishpaths(f, f$TagID, f$Station)
+beep(7)
+
+firstlast <- f2 %>% 
+  mutate(year = year(DateTagged)) %>% 
+  group_by(year, TagID) %>% 
+  arrange(arrival, departure) %>% 
+  slice(c(1, length(departure)))  # assuming that worked, can now group by TagID and calculate total residence
+
+meanres <- firstlast %>% 
+  group_by(TagID, year) %>% 
+  mutate(totalres = departure[2] - arrival[1], avgres = mean(totalres)) %>% 
+  ungroup() %>% 
+  group_by(Sp, year) %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres)) # need to properly assign year(s) to these data
+
+## Tagging seasons:
+
+# 2012: March - December
+# 2013: September - December
+# 2014: March - December
+# 2015: September - December
+
+# Need to assign a column for TaggingYear, then modify the fishtrackr functions.  Ideally I should assign this column in all69khz and all69khz_grouped.
+
+f %>% 
+  ifelse()
+
+meanres
+
+#  Relative Residence calculation plan:
 # Get final detection points for each fish
 # in 2012, RSTR or Base_TD is an acceptable final detection point for exiting the Bypass
 # for 2013 on, must be BCE/W/2
