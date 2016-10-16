@@ -1,8 +1,9 @@
 #  Residence Time #
 library(ybp)
 library(fishtrackr)
-library(dplyr)
+library(tidyverse)
 library(lubridate)
+
 # Exploring simultaneous detections ---------------------------------------
 
 f <- all69khz
