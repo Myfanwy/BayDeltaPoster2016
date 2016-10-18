@@ -1,0 +1,21 @@
+---
+title: "Time Series Exercises"
+output: html_notebook
+---
+
+
+```{r}
+library(xts)
+library(tidyverse)
+library(ybp)
+library(fishtrackr)
+Sys.setenv(TZ = 'Pacific/Pitcairn')
+
+d <- all69khz_grouped
+d <- arrange(d, DateTimeUTC)
+str(d)
+dx <- xts(d[, -1], order.by=as.POSIXct(d$DateTimeUTC))
+
+head(dx)
+```
+
