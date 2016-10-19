@@ -15,7 +15,10 @@ d <- all69khz_grouped
 d <- arrange(d, DateTimeUTC)
 str(d)
 dx <- xts(d[, -1], order.by=as.POSIXct(d$DateTimeUTC))
-
+str(dx)
 head(dx)
+indexTZ(dx) <- "Pacific/Pitcairn" # set all detection times to PST
+
+#  Now do this whole thing with fishpaths residency?
 ```
 

@@ -1,0 +1,130 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Calculating and comparing residencies for white sturgeon and chinook salmon, 2012-2016.
+
+Detection years run from July to June (i.e. July 2011 through June 2012).  We have data through detection year 2015 (July 2015-June 2016).
+
+There are estimates for the following groups and years:
+
+White Sturgeon: four years of estimates for those 67 fish tagged in 2012, and two years of estimates for the 25 fish tagged in 2014.  These combine to make four years of estimates total, with varying numbers of returning fish.
+
+Chinook salmon: four years of estimates for the fish tagged in fall 2012, 2013, 2014, and 2015.
+
+```{r}
+#  Residence Time #
+library(ybp)
+library(fishtrackr)
+library(tidyverse)
+
+a <- alltags
+groups <- split(a, a$`Tagging Group`)
+g <- map(groups, select, TagID) # selects only the TagID column of each dataframe
+tags <- unlist(g, recursive = FALSE) # have to unlist the first level to be able to manipulate with these as vectors
+
+d <- all69khz_grouped # all detections, with grouped gated receivers
+
+# we'll do white sturgeon first
+d3 <- filter(d, TagID %in% tags$wst_2012.TagID | TagID %in% tags$wst_2014.TagID) # contains all the detections for both tagging groups of white sturgeon - still have to filter further by year to get residence
+
+# White sturgeon residence in detyear 2011 (which includes only the spring of 2012)
+wst12 <- d3 %>% 
+  filter(DateTimeUTC > "2011-06-01 00:00:00", DateTimeUTC < '2012-05-31 23:59:59') # keep in mind that this is all in UTC still
+fp_wst12 <- fishpaths(wst12, wst12$TagID, wst12$Station)
+
+firstlast_wst12 <- fp_wst12 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_wst12$totalres) <- "days"
+
+meanres_wst12 <- firstlast_wst12 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
+
+meanres_wst12
+
+
+```
+```{r}
+# White sturgeon residence in 2013:
+wst13 <- d3 %>% 
+  filter(DateTimeUTC > "2012-06-01 00:00:00", DateTimeUTC < '2013-05-31 23:59:59') # keep in mind that this is all in UTC still
+fp_wst13 <- fishpaths(wst13, wst13$TagID, wst13$Station)
+
+
+firstlast_wst13 <- fp_wst13 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_wst13$totalres) <- "days"
+
+meanres_wst13 <- firstlast_wst13 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
+
+meanres_wst13
+
+
+```
+```{r}
+# White sturgeon residence in 2014:
+wst14 <- d3 %>% 
+  filter(DateTimeUTC > "2013-06-01 00:00:00", DateTimeUTC < '2014-05-31 23:59:59') # keep in mind that this is all in UTC still
+fp_wst14 <- fishpaths(wst14, wst14$TagID, wst14$Station)
+
+
+firstlast_wst14 <- fp_wst14 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_wst14$totalres) <- "days"
+
+meanres_wst14 <- firstlast_wst14 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
+
+meanres_wst14
+```
+```{r}
+# White sturgeon residence in 2014-2015:
+wst15 <- d3 %>% 
+  filter(DateTimeUTC > "2014-06-01 00:00:00", DateTimeUTC < '2015-05-31 23:59:59') # keep in mind that this is all in UTC still
+fp_wst15 <- fishpaths(wst15, wst15$TagID, wst15$Station)
+
+
+firstlast_wst15 <- fp_wst15 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_wst15$totalres) <- "days"
+
+meanres_wst15 <- firstlast_wst15 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
+
+meanres_wst15
+```
+
+```{r}
+# White sturgeon residence in 2015-2016:
+wst16 <- d3 %>% 
+  filter(DateTimeUTC > "2015-06-01 00:00:00", DateTimeUTC < '2016-05-31 23:59:59') # keep in mind that this is all in UTC still
+fp_wst16 <- fishpaths(wst16, wst16$TagID, wst16$Station)
+
+
+firstlast_wst16 <- fp_wst16 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_wst16$totalres) <- "days"
+
+meanres_wst16 <- firstlast_wst16 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
+
+meanres_wst16
+```
+

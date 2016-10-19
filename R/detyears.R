@@ -18,10 +18,59 @@ d2 <- filter(d, TagID %in% tags$fca_2012.TagID) # now we have an easy way to fil
 
 d3 <- filter(d, TagID %in% tags$wst_2012.TagID) # contains all the detections for this tagging group - have to filter further by year
 
-d3 <- d3 %>% 
+wst12 <- d3 %>% 
+  filter(DateTimeUTC > "2011-06-01 00:00:00", DateTimeUTC < '2012-05-31 23:59:59') # keep in mind that this is all in UTC still
+fp_wst12 <- fishpaths(wst12, wst12$TagID, wst12$Station)
+
+# calculate residence - raw monitor residence
+fp_wst12$residence <- fp_wst12$departure - fp_wst12$arrival
+units(fp_wst12$residence) <- "days"
+
+firstlast_wst12 <- fp_wst12 %>% 
+  group_by(TagID) %>% 
+  arrange(arrival, departure) %>% 
+  slice(c(1, length(departure))) # slices the row of the earliest arrival and the latest departure
+
+meanres_wst12 <- firstlast_wst12 %>% 
+  group_by(TagID) %>% 
+  mutate(totalres = departure[2] - arrival[1]) %>% 
+  ungroup() %>%
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # need to properly assign year(s) to these data
+
+# combining those 2 chains above:
+
+meanres_wst12_combinedchain <- 
+fp_wst12 %>% 
+  group_by(TagID) %>% 
+  arrange(arrival, departure) %>% 
+  slice(c(1, length(departure))) %>% 
+  mutate(totalres = departure[2] - arrival[1]) %>% 
+  ungroup() %>%
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
+
+
+wst13 <- d3 %>% 
   filter(DateTimeUTC > "2013-06-01 00:00:00", DateTimeUTC < "2014-05-31 23:59:59")
 
-# Need a way to programmatically separate detections by detection year and tagging group, and save them all as separate dataframes in order to calculate residence time from.
+fp_wst13 <- fishpaths(wst13, wst13$TagID, wst13$Station)
+head(fp_wst13)
+
+firstlast_wst13 <- fp_wst13 %>% 
+  group_by(TagID) %>% 
+  arrange(arrival, departure) %>% 
+  slice(c(1, length(departure))) # slices the row of the earliest arrival and the latest departure
+
+meanres_wst13 <- firstlast_wst13 %>% 
+  group_by(TagID) %>% 
+  mutate(totalres = departure[2] - arrival[1]) %>% 
+  ungroup() %>%
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # need to properly assign year(s) to these data
+
+
+# For now it's all copy and paste; Need a way to programmatically separate detections by detection year and tagging group, and save them all as separate dataframes in order to calculate residence time from.
+
+
+
 
 # By hand: except for 2012, detection years start on July 1st ever year, and end on June 30th.
 dstart = c("2011-07-01 00:00:00", 
@@ -33,10 +82,10 @@ dstart = c("2011-07-01 00:00:00",
 
 dend <- c("2012-06-30 00:00:00", 
           "2013-06-30 00:00:00", 
-          "2013-06-30 00:00:00",
           "2014-06-30 00:00:00",
           "2015-06-30 00:00:00",
-          "2016-06-30 00:00:00")
+          "2016-06-30 00:00:00",
+          "2017-06-30 00:00:00")
 
 detyears <- data_frame(dstart, dend)
 detyears$detyear <- 2011:2016
