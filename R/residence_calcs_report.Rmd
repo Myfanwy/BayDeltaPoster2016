@@ -29,10 +29,59 @@ d <- all69khz_grouped # all detections, with grouped gated receivers
 # we'll do white sturgeon first
 d3 <- filter(d, TagID %in% tags$wst_2012.TagID | TagID %in% tags$wst_2014.TagID) # contains all the detections for both tagging groups of white sturgeon - still have to filter further by year to get residence
 
-# White sturgeon residence in detyear 2011 (which includes only the spring of 2012)
-wst12 <- d3 %>% 
+d3 <- d3 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  arrange(DateTimeUTC)  # make sure we don't get any detections for individual fish before they were tagged
+
+
+# White sturgeon residence in detyear 2011 (which includes only the spring of 2012)---------
+
+wst11 <- d3 %>% 
   filter(DateTimeUTC > "2011-06-01 00:00:00", DateTimeUTC < '2012-05-31 23:59:59') # keep in mind that this is all in UTC still
+
+fp_wst11 <- fishpaths(wst11, wst11$TagID, wst11$Station)
+
+fp_wst11 <- fp_wst11 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_wst11$residence) <- "days"
+
+fp_wst11 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
+
+firstlast_wst11 <- fp_wst11 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_wst11$totalres) <- "days"
+firstlast_wst11$tagging_group <- "wst11"
+
+meanres_wst11 <- firstlast_wst11 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
+
+meanres_wst11
+
+
+```
+```{r}
+# White sturgeon residence in 2012------------------
+
+wst12 <- d3 %>% 
+  filter(DateTimeUTC > "2012-06-01 00:00:00", DateTimeUTC < '2013-05-31 23:59:59') # keep in mind that this is all in UTC still
+
 fp_wst12 <- fishpaths(wst12, wst12$TagID, wst12$Station)
+
+fp_wst12 <- fp_wst12 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_wst12$residence) <- "days"
+
+fp_wst12 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
 
 firstlast_wst12 <- fp_wst12 %>% 
   group_by(TagID) %>% 
@@ -40,6 +89,7 @@ firstlast_wst12 <- fp_wst12 %>%
   mutate(totalres = lastdeparture - firstarrival) 
 
 units(firstlast_wst12$totalres) <- "days"
+firstlast_wst12$tagging_group <- "wst12"
 
 meanres_wst12 <- firstlast_wst12 %>% 
   summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
@@ -49,11 +99,22 @@ meanres_wst12
 
 ```
 ```{r}
-# White sturgeon residence in 2013:
+# White sturgeon residence in 2013:-----------------
 wst13 <- d3 %>% 
-  filter(DateTimeUTC > "2012-06-01 00:00:00", DateTimeUTC < '2013-05-31 23:59:59') # keep in mind that this is all in UTC still
+  filter(DateTimeUTC > "2013-06-01 00:00:00", DateTimeUTC < '2014-05-31 23:59:59')
+
+wst13 <- filter(wst13,  !(TagID %in% tags$wst_2014.TagID)) # Only run this line for the plot; it filters out the fish tagged that spring
+
 fp_wst13 <- fishpaths(wst13, wst13$TagID, wst13$Station)
 
+fp_wst13 <- fp_wst13 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_wst13$residence) <- "days"
+
+fp_wst13 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
 
 firstlast_wst13 <- fp_wst13 %>% 
   group_by(TagID) %>% 
@@ -61,20 +122,29 @@ firstlast_wst13 <- fp_wst13 %>%
   mutate(totalres = lastdeparture - firstarrival) 
 
 units(firstlast_wst13$totalres) <- "days"
+firstlast_wst13$tagging_group <- "wst13"
 
 meanres_wst13 <- firstlast_wst13 %>% 
   summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
 
 meanres_wst13
 
-
 ```
 ```{r}
-# White sturgeon residence in 2014:
+# White sturgeon residence in 2014:-----------------
 wst14 <- d3 %>% 
-  filter(DateTimeUTC > "2013-06-01 00:00:00", DateTimeUTC < '2014-05-31 23:59:59') # keep in mind that this is all in UTC still
+  filter(DateTimeUTC > "2014-06-01 00:00:00", DateTimeUTC < '2015-05-31 23:59:59') # keep in mind that this is all in UTC still
+
 fp_wst14 <- fishpaths(wst14, wst14$TagID, wst14$Station)
 
+fp_wst14 <- fp_wst14 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_wst14$residence) <- "days"
+
+fp_wst14 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
 
 firstlast_wst14 <- fp_wst14 %>% 
   group_by(TagID) %>% 
@@ -82,18 +152,30 @@ firstlast_wst14 <- fp_wst14 %>%
   mutate(totalres = lastdeparture - firstarrival) 
 
 units(firstlast_wst14$totalres) <- "days"
+firstlast_wst14$tagging_group <- "wst14"
 
 meanres_wst14 <- firstlast_wst14 %>% 
   summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
 
 meanres_wst14
+
 ```
+
 ```{r}
-# White sturgeon residence in 2014-2015:
+# White sturgeon residence in 2015-2016:-----------------
 wst15 <- d3 %>% 
-  filter(DateTimeUTC > "2014-06-01 00:00:00", DateTimeUTC < '2015-05-31 23:59:59') # keep in mind that this is all in UTC still
+  filter(DateTimeUTC > "2015-06-01 00:00:00", DateTimeUTC < '2016-05-31 23:59:59') # keep in mind that this is all in UTC still
+
 fp_wst15 <- fishpaths(wst15, wst15$TagID, wst15$Station)
 
+fp_wst15 <- fp_wst15 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_wst15$residence) <- "days"
+
+fp_wst15 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
 
 firstlast_wst15 <- fp_wst15 %>% 
   group_by(TagID) %>% 
@@ -101,30 +183,256 @@ firstlast_wst15 <- fp_wst15 %>%
   mutate(totalres = lastdeparture - firstarrival) 
 
 units(firstlast_wst15$totalres) <- "days"
+firstlast_wst15$tagging_group <- "wst15"
 
 meanres_wst15 <- firstlast_wst15 %>% 
-  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) # works; move to new script to complete calculations
 
 meanres_wst15
 ```
 
 ```{r}
-# White sturgeon residence in 2015-2016:
-wst16 <- d3 %>% 
-  filter(DateTimeUTC > "2015-06-01 00:00:00", DateTimeUTC < '2016-05-31 23:59:59') # keep in mind that this is all in UTC still
-fp_wst16 <- fishpaths(wst16, wst16$TagID, wst16$Station)
+# wst residence
+allwst <- rbind(firstlast_wst11, firstlast_wst12, firstlast_wst13, firstlast_wst14, firstlast_wst15)
+allwst$Sp = "wst"
+
+ggplot(allwst, aes(x = Sp, y = totalres)) + geom_boxplot(alpha = 0.5) + geom_jitter(aes(color = tagging_group))
+```
 
 
-firstlast_wst16 <- fp_wst16 %>% 
+
+```{r}
+
+# How to filter for shed tags:
+# we want to exclude any tags that pinged continuously for more than 1 week, which means taht we have to filter them before the fish paths take place.
+# given d, spit out the TagID of any fish that sat in once place had consecutive detections.  Could do this with cumsum?
+
+# if a tag pings every 30 seconds for a week, what would the cumsum be on the difftime?
+# another way to ask that: how many 30-second intervals are there in a week?  
+intervals = 604800/30 # about 20,000 detections.  So need a way to filter out encounters that have >20,000 continuous detections.  First let's find any:
+
+d2 <- filter(d, TagID %in% tags$fca_2014.TagID)
+d2 <- filter(d2, DateTimeUTC >= max(d2$DateTagged))
+d2 %>% 
+  group_by(TagID, Station) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n) %>% 
+  top_n(10)
+
+# so a fish died at Cache_creek and at Wallace Weir, but let's make sure that was their final detected location
+
+shed_cache <- filter(d, TagID == 13729)
+shed_fp <- fishpaths(shed_cache, shed_cache$TagID, shed_cache$Station) # true for this guy, although he also has a weird detection before he was tagged - need to make that a default filter somehow.
+
+shed_ww <- filter(d, TagID == 20164)
+shed_wwfp <- fishpaths(shed_ww, shed_ww$TagID, shed_ww$Station) # true for this guy as well.
+
+# Ok - so proof of concept, now we need to filter out just those detections.
+
+d2_filt <- d2 %>% 
+  group_by(TagID, Station) %>% 
+  mutate(count = n()) %>% 
+  filter(count <= 17000) %>% 
+  ungroup() %>% 
+  arrange(DateTimeUTC)
+
+13729 %in% d2_filt$TagID # TRUE, should still be in there, just not at Cache_creek
+shed_cache_chk <- filter(d2_filt, TagID == 13729)
+shed_fp_chk <- fishpaths(shed_cache_chk, shed_cache_chk$TagID, shed_cache_chk$Station) # this kind of works, except that we lost that location info - the fish DID make it to Cache Creek, and we want that reflected.
+
+
+ggplot(d2, aes(x = DateTimeUTC, y = Station)) + geom_point(aes(color = factor(TagID)))
+#jesus, how long was that tag there?
+
+d2 %>% 
+  filter(TagID == 13729) %>% 
+  arrange(DateTimeUTC) %>% 
+  group_by(Station) %>% 
+  summarise(timespent = max(DateTimeUTC) - min(DateTimeUTC))
+
+# same, but on fishpaths df:
+shed_fp <- shed_fp %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(shed_fp$residence) <- "days"
+shed_fp
+
+shed_fp %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days # Okay - that should work.
+```
+
+```{r}
+# Chinook residence in 2012-2013:
+d2 <- filter(d, TagID %in% tags$fca_2012.TagID)
+d2 <- d2 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) # make sure we don't get any detections for individual fish before they were tagged
+
+chn12 <- d2 %>% 
+  filter(DateTimeUTC > "2012-06-01 00:00:00", DateTimeUTC < '2013-05-31 23:59:59') # keep in mind that this is all in UTC still
+
+fp_chn12 <- fishpaths(chn12, chn12$TagID, chn12$Station)
+
+fp_chn12 <- fp_chn12 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_chn12$residence) <- "days"
+
+fp_chn12 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
+
+firstlast_chn12 <- fp_chn12 %>% 
   group_by(TagID) %>% 
   summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
   mutate(totalres = lastdeparture - firstarrival) 
 
-units(firstlast_wst16$totalres) <- "days"
+units(firstlast_chn12$totalres) <- "days"
+firstlast_chn12$tagging_group <- "chn12"
 
-meanres_wst16 <- firstlast_wst16 %>% 
+meanres_chn12 <- firstlast_chn12 %>% 
   summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
 
-meanres_wst16
+meanres_chn12
+
+# Chinook residence in 2013-2014
+d2 <- filter(d, TagID %in% tags$fca_2013.TagID)
+
+d2 <- d2 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  ungroup() # make sure we don't get any detections for individual fish before they were tagged; filters out 702 detections
+
+chn13 <- d2 %>% 
+  filter(DateTimeUTC > "2013-06-01 00:00:00", DateTimeUTC < '2014-05-31 23:59:59') %>% 
+  arrange(DateTimeUTC)# keep in mind that this is all in UTC still
+
+fp_chn13 <- fishpaths(chn13, chn13$TagID, chn13$Station)
+
+fp_chn13 <- fp_chn13 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_chn13$residence) <- "days"
+
+fp_chn13 <- fp_chn13 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
+
+firstlast_chn13 <- fp_chn13 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_chn13$totalres) <- "days"
+firstlast_chn13$tagging_group <- "chn13"
+
+meanres_chn13 <- firstlast_chn13 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
+
+meanres_chn13
+
+# Chinook residence in 2014-2015-----------------
+
+d2 <- filter(d, TagID %in% tags$fca_2014.TagID)
+
+d2 <- d2 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  ungroup() # make sure we don't get any detections for individual fish before they were tagged
+
+chn14 <- d2 %>% 
+  filter(DateTimeUTC > "2014-06-01 00:00:00", DateTimeUTC < '2015-05-31 23:59:59') %>% 
+  arrange(DateTimeUTC)# keep in mind that this is all in UTC still
+
+fp_chn14 <- fishpaths(chn14, chn14$TagID, chn14$Station)
+
+fp_chn14 <- fp_chn14 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_chn14$residence) <- "days"
+
+fp_chn14 <- fp_chn14 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
+
+
+firstlast_chn14 <- fp_chn14 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_chn14$totalres) <- "days"
+firstlast_chn14$tagging_group <- "chn14"
+
+meanres_chn14 <- firstlast_chn14 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
+
+meanres_chn14
+
+ggplot(fp_chn14, aes(x = departure, y = Station)) + geom_point(aes(color = factor(TagID))) # so the problem is that separately, none of the encounters are more than 7 days, but cumulatively, there's still definnitely a couple of potential shed tags.  Will need to come up with a better, more subtle filter for this down the road.  # GIT ISSUE
+
+
+# Chinook residence in 2015-2016 ------------------------------
+
+d2 <- filter(d, TagID %in% tags$fca_2015.TagID)
+
+d2 <- d2 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  ungroup() # make sure we don't get any detections for individual fish before they were tagged
+
+chn15 <- d2 %>% 
+  filter(DateTimeUTC > "2015-06-01 00:00:00", DateTimeUTC < '2016-05-31 23:59:59') %>% 
+  arrange(DateTimeUTC)# keep in mind that this is all in UTC still
+
+fp_chn15 <- fishpaths(chn15, chn15$TagID, chn15$Station)
+
+fp_chn15 <- fp_chn15 %>% 
+  arrange(arrival) %>% 
+  mutate(residence = departure - arrival)
+  
+units(fp_chn15$residence) <- "days"
+
+fp_chn15 <- fp_chn15 %>% 
+  filter(residence <= 7) # filter out encounters equal to or longer than 7 consecutive days
+
+firstlast_chn15 <- fp_chn15 %>% 
+  group_by(TagID) %>% 
+  summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
+  mutate(totalres = lastdeparture - firstarrival) 
+
+units(firstlast_chn15$totalres) <- "days"
+firstlast_chn15$tagging_group <- "chn15"
+
+meanres_chn15 <- firstlast_chn15 %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres), n = len(TagID)) 
+
+meanres_chn15
+ggplot(fp_chn15, aes(x = departure, y = Station)) + geom_point(aes(color = factor(TagID)))
+
 ```
 
+So now, after doing all those clunky brute-force calculations, time to put it all together:
+
+```{r}
+chn <- rbind(firstlast_chn12, firstlast_chn13, firstlast_chn14, firstlast_chn15)
+chn$Sp <- "chn"
+
+residency <- rbind(allwst, chn)
+
+res_completeyears <- filter(residency, tagging_group != "wst11", tagging_group != "chn12")
+g <- ggplot(res_completeyears, aes(x = Sp, y = totalres)) + geom_boxplot(alpha = 0.6) + geom_jitter(aes(color = tagging_group))
+
+g + labs(title = "Residency in Yolo Bypass by Species", x = "Species", y = "Residence in Days")
+
+```
+This data has been lightly filtered for shed tags, and for consistency in length of year and tagging location, it does not include the spring of 2012, the values for the white sturgeon tagged in Spring of 2014 within the "wst13 group", or the 12 salmon tagged in fall of 2012.  A complete table of average residencies by species and year (including those groups ommited above) is below.
+
+```{r}
+
+residency %>% 
+  group_by(tagging_group) %>% 
+  summarise(`Mean Residency in Days` = mean(totalres), `Standard Deviation` = sd(totalres), `Number of Fish Tagged` = n())
+
+```
