@@ -20,5 +20,8 @@ head(dx)
 indexTZ(dx) <- "Pacific/Pitcairn" # set all detection times to PST
 
 #  Now do this whole thing with fishpaths residency?
+
+
 ```
 
+Need to create the value column before we generate the index column, actually...

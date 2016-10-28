@@ -422,7 +422,7 @@ chn$Sp <- "chn"
 residency <- rbind(allwst, chn)
 
 res_completeyears <- filter(residency, tagging_group != "wst11", tagging_group != "chn12")
-g <- ggplot(res_completeyears, aes(x = Sp, y = totalres)) + geom_boxplot(alpha = 0.6) + geom_jitter(aes(color = tagging_group))
+g <- ggplot(res_completeyears, aes(x = Sp, y = totalres)) + geom_boxplot(alpha = 0.6) + geom_jitter(aes(color = Sp), size = 2, alpha = 0.7)
 
 g + labs(title = "Residency in Yolo Bypass by Species", x = "Species", y = "Residence in Days")
 

@@ -1,0 +1,158 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ybp)
+library(fishtrackr)
+library(lubridate)
+library(viridis)
+library(beepr)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+```
+
+```{r}
+
+stock <- "MSFT"
+start.date <- "2012-01-12"
+end.date <- Sys.Date()
+quote <- paste("http://ichart.finance.yahoo.com/table.csv?s=",
+                stock,
+                "&a=", substr(start.date,6,7),
+                "&b=", substr(start.date, 9, 10),
+                "&c=", substr(start.date, 1,4), 
+                "&d=", substr(end.date,6,7),
+                "&e=", substr(end.date, 9, 10),
+                "&f=", substr(end.date, 1,4),
+                "&g=d&ignore=.csv", sep="")             
+stock.data <- read.csv(quote, as.is=TRUE)
+
+stock.data <- transform(stock.data,
+  week = as.POSIXlt(Date)$yday %/% 7 + 1,
+  wday = as.POSIXlt(Date)$wday,
+  year = as.POSIXlt(Date)$year + 1900)
+
+ggplot(stock.data, aes(week, wday, fill = Adj.Close)) + 
+
+  geom_tile(colour = "white") + 
+
+  scale_fill_gradientn(colours = c("#D61818","#FFAE63","#FFFFBD","#B5E384")) + 
+
+  facet_wrap(~ year, ncol = 1)
+
+#  Find the number of fish in the system at any given time:
+d <- all69khz_grouped
+d <- filter(d, DateTimeUTC > "2012-01-01", DateTimeUTC < "2012-12-31 00:00:00") # start with 2012
+d$Date <- as.Date(d$DateTimeUTC)
+d$jday <- julian(d$Date, origin = as.Date("2012-01-01"))
+d$week <- as.POSIXlt(d$Date, origin = as.Date("2012-01-01"))$yday %/% 7 + 1
+d$wday <-  as.POSIXlt(d$Date, origin = as.Date("2012-01-01"))$wday
+d$year <- year(d$Date)
+                     
+numfish <- d %>% 
+  group_by(week, wday, year, TagID, Sp) %>% 
+  summarise(ndets = n())
+
+numfish <- numfish %>% 
+  group_by(Sp, week, wday, year) %>% 
+  summarise(nfish = n()) %>% 
+  arrange(week)
+
+  ggplot(numfish, aes(x = week, y = wday, fill = nfish)) + 
+    
+    geom_tile(colour = "white") + 
+  
+    scale_fill_viridis() + 
+  
+    facet_wrap(~ Sp, ncol = 1)
+
+
+
+
+
+```
+
+Need to split the data frame into detection years.
+Fastest way for now is just to create 4 separate dataframes, add a detyear column to each, and then re-join.
+
+```{r}
+# Create separate detection year dataframes
+d <- all69khz_grouped
+d$Date <- as.Date(d$DateTimeUTC)
+
+
+d11 <- dplyr::filter(d, DateTimeUTC > "2011-07-01 00:00:00", DateTimeUTC < "2012-06-30 00:00:00") # start with 2012
+d12 <- dplyr::filter(d, DateTimeUTC > "2012-07-01 00:00:00", DateTimeUTC < "2013-06-30 00:00:00")
+d13 <- dplyr::filter(d, DateTimeUTC > "2013-07-01 00:00:00", DateTimeUTC < "2014-06-30 00:00:00")
+d14 <- dplyr::filter(d, DateTimeUTC > "2014-07-01 00:00:00", DateTimeUTC < "2015-06-30 00:00:00")
+d15 <- dplyr::filter(d, DateTimeUTC > "2015-07-01 00:00:00", DateTimeUTC < "2016-06-30 00:00:00")
+
+d11$detyear <- "2011"
+d12$detyear <- "2012"
+d13$detyear <- "2013"
+d14$detyear <- "2014"
+d15$detyear <- "2015"
+
+d2 <- rbind(d11, d12, d13, d14, d15, make.row.names = FALSE)
+
+library(dplyr)
+
+d2$day <- as.Date(d2$DateTimeUTC)
+d2 <- d2 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  ungroup() 
+
+densities <- d2 %>% 
+  group_by(day, TagID) %>% 
+  mutate(detcount = n()) # where n is the number of detections for that tagid on that day
+
+densities <- d2 %>% 
+  group_by(detyear, day, Sp) %>% 
+  summarise(nfish = length(unique(TagID))) 
+densities
+
+ggplot(densities, aes(x = day, y = nfish)) + geom_point(aes(color = Sp))
+
+densmap <- densities
+densmap <- transform(densmap,
+  week = as.POSIXlt(day)$yday %/% 7 + 1,
+  wday = as.POSIXlt(day)$wday,
+  year = as.POSIXlt(day)$year + 1900)
+
+# plot by species
+densmap$detyear <- factor(densmap$detyear, labels = c("2011-2012",  
+                                                      "2012-2013",
+                                                      "2013-2014",
+                                                      "2014-2015",
+                                                      "2015-2016"))
+p <- ggplot(densmap, aes(x = week, y = wday, fill = Sp)) + 
+    
+    geom_tile(colour = "white", alpha = 0.6) + 
+  
+    scale_fill_manual(values = c("blue", "yellow")) +
+  
+    facet_wrap(~detyear, ncol = 1, labeller = label_value)
+
+p + labs(title = "Presence in the Yolo Bypass By Species and Detection Year", x = " ",
+         y = "Weekday") + theme(axis.text.x = element_blank(),
+                                axis.ticks.x = element_blank())
+
+# plot by number of fish in the system:
+
+ggplot(densmap, aes(x = week, y = wday, group = Sp, fill = nfish)) + 
+    
+    geom_tile(aes(color = Sp), colour = "white", alpha = 0.6) + 
+  
+  #  scale_fill_viridis() +
+  
+    facet_wrap(~detyear, ncol = 1, labeller = label_value )
+```
+
+The overarching aim of this project is to investigate the movement behavior of different types of migrants in the Yolo Bypass, an intensely altered seasonal floodplain in the Sacramento-San Joaquin Delta of California.  Both white sturgeon (Acipenser transmontanus) and chinook salmon (Oncorhyncus tshawytscha) navigate the floodplain during their spawning migrations, but with very different reproductive strategies.  White sturgeon are iteroparous: they undergo multiple reproductive cycles (and thus multiple spawning migrations) over the course of their lifetimes.  Chinook salmon are semelparous, undergoing a single spawning migration and reproducing only once before death.  Like native species everywhere, both are uniquely adapted to the historical conditions of their local environment, which has since undergone extreme modification by humans.  The ecological success of a migratory species may vary with life stage, migratory route, and response to passage barriers.  Understanding how these animals move through their environment is a fundamental part of determining how the migratory landscape is best conserved, managed, or reconciled.  This presentation synthesizes four years of data from acoustically-tagged adult migrants, and provides answers to basic questions about the route(s) taken by adult migrants, the spatiotemporal patterns of system use (i.e., the spatial extent of migrant movements as well as the timing of entry, exit, and residence in the system), the behavior around passage barriers by different migrant types, and the environmental cues they may respond to on their migratory paths in different years.

@@ -2,9 +2,7 @@
 
 a <- alltags
 head(a)
-?split
 groups <- split(a, a$`Tagging Group`)
-str(groups)
 names(groups)
 
 g <- map(groups, select, TagID) # selects only the TagID column of each dataframe
