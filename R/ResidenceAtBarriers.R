@@ -86,3 +86,87 @@ d2 %>%
 
 w46440 <- d2 %>% 
   filter(residence < 150, residence > 0, TagID == 46640)
+
+
+
+## Filtering for only those fish that encountered barriers
+
+# Fall 2012:
+d2 <- filter(d, TagID %in% tags$fca_2012.TagID | TagID %in% tags$wst_2012.TagID)
+d2 <- filter(d2, DateTimeUTC > "2012-07-01", DateTimeUTC < "2013-06-30")
+str(d2)
+
+barIDS <- d2 %>% 
+  group_by(TagID, Station) %>% 
+  filter(Station == "Lisbon") %>% 
+  summarise(TagIDs = unique(TagID))
+
+lis12 <- filter(d2, TagID %in% barIDS$TagID)
+
+lis12 <- fishpaths(lis12, lis12$TagID, lis12$Station)
+lis12$residence <- lis12$departure - lis12$arrival
+units(lis12$residence) = "hours"
+
+lis12 %>% 
+  filter(Station == "Lisbon", residence > 0) %>% # filter out single detection encounters
+  ggplot(aes(x = Sp, y = residence)) + geom_boxplot(aes(color = Sp)) + geom_jitter(aes(color = factor(TagID))) + theme(legend.position = "none") + labs(title = "Residence in Hours at Lisbon Weir by Species, 2012")
+
+# Fall 2013:
+d2 <- filter(d, TagID %in% tags$fca_2013.TagID | TagID %in% tags$wst_2012.TagID)
+d2 <- filter(d2, DateTimeUTC > "2013-07-01", DateTimeUTC < "2014-06-30")
+str(d2)
+
+barIDS <- d2 %>% 
+  group_by(TagID, Station) %>% 
+  filter(Station == "Lisbon") %>% 
+  summarise(TagIDs = unique(TagID))
+  
+lis13 <- filter(d2, TagID %in% barIDS$TagID)
+
+lis13 <- fishpaths(lis13, lis13$TagID, lis13$Station)
+lis13$residence <- lis13$departure - lis13$arrival
+units(lis13$residence) = "hours"
+
+lis13 %>% 
+  filter(Station == "Lisbon", residence > 0) %>% 
+  ggplot(aes(x = Sp, y = residence)) + geom_boxplot(aes(color = Sp)) + geom_jitter(aes(color = factor(TagID))) + theme(legend.position = "none") + labs(title = "Residence in Hours at Lisbon Weir by Species, 2013")
+
+# Fall 2014:
+d2 <- filter(d, TagID %in% tags$fca_2014.TagID | TagID %in% tags$wst_2012.TagID | TagID %in% tags$wst_2014.TagID)
+d2 <- filter(d2, DateTimeUTC > "2014-07-01", DateTimeUTC < "2015-06-30")
+str(d2)
+
+barIDS <- d2 %>% 
+  group_by(TagID, Station) %>% 
+  filter(Station == "Lisbon") %>% 
+  summarise(TagIDs = unique(TagID))
+
+lis14 <- filter(d2, TagID %in% barIDS$TagID)
+
+lis14 <- fishpaths(lis14, lis14$TagID, lis14$Station)
+lis14$residence <- lis14$departure - lis14$arrival
+units(lis14$residence) = "hours"
+
+lis14 %>% 
+  filter(Station == "Lisbon", residence > 0) %>% 
+  ggplot(aes(x = Sp, y = residence)) + geom_boxplot(aes(color = Sp)) + geom_jitter(aes(color = factor(TagID))) + theme(legend.position = "none") + labs(title = "Residence in Hours at Lisbon Weir by Species, 2014")
+
+# Fall 2015:
+d2 <- filter(d, TagID %in% tags$fca_2015.TagID | TagID %in% tags$wst_2012.TagID | TagID %in% tags$wst_2014.TagID)
+d2 <- filter(d2, DateTimeUTC > "2015-07-01", DateTimeUTC < "2016-06-30")
+str(d2)
+
+barIDS <- d2 %>% 
+  group_by(TagID, Station) %>% 
+  filter(Station == "Lisbon") %>% 
+  summarise(TagIDs = unique(TagID))
+
+lis15 <- filter(d2, TagID %in% barIDS$TagID)
+
+lis15 <- fishpaths(lis15, lis15$TagID, lis15$Station)
+lis15$residence <- lis15$departure - lis15$arrival
+units(lis15$residence) = "hours"
+
+lis15 %>% 
+  filter(Station == "Lisbon", residence > 0) %>% 
+  ggplot(aes(x = Sp, y = residence)) + geom_boxplot(aes(color = Sp)) + geom_jitter(aes(color = factor(TagID))) + theme(legend.position = "none") + labs(title = "Residence in Hours at Lisbon Weir by Species, 2015")

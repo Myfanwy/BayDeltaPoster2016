@@ -70,7 +70,7 @@ meanres_wst13 <- firstlast_wst13 %>%
 
 
 
-# By hand: except for 2012, detection years start on July 1st ever year, and end on June 30th.
+# By hand: except for 2012, detection years start on July 1st every year, and end on June 30th.
 dstart = c("2011-07-01 00:00:00", 
            "2012-07-01 00:00:00", 
            "2013-07-01 00:00:00", 
@@ -89,8 +89,31 @@ detyears <- data_frame(dstart, dend)
 detyears$detyear <- 2011:2016
 (detyears)
 
-# Now need to merge detyear column with fishpaths, conditional on dstart and dend
-fp <- fishpaths(d, d$TagID, d$Station)
+# Adding detyear to the big dataframe: first proof of concept, then re-run with whole set:
+d <- all69khz_grouped
+d <- sample_n(d, 10, replace = FALSE)
+d <- arrange(d, DateTimeUTC)
+
+d2 <- d %>% 
+  arrange(DateTimeUTC) %>% 
+  mutate(detyear = 
+ifelse(
+    DateTimeUTC > "2011-07-01 00:00:00" & DateTimeUTC < "2012-06-30 00:00:00", "2011",
+  ifelse(
+    DateTimeUTC > "2012-07-01 00:00:00" & DateTimeUTC < "2013-06-30 00:00:00", "2012",
+    ifelse(
+      DateTimeUTC > "2013-07-01 00:00:00" & .$DateTimeUTC < "2014-06-30 00:00:00", "2013",
+      ifelse(
+        DateTimeUTC > "2014-07-01 00:00:00" & DateTimeUTC < "2015-06-30 00:00:00", "2014", "2015"
+            )
+          )
+        )
+      )
+        ) # worked!
+
+# did that break fishpaths?
+fp <- fishpaths(d2, d2$TagID, d2$Station)
+# yes, it did - could either run the same thing on fishpaths, or add detyear to the function.  will add as an issue to ybp.
 
 d3comp <- d %>% 
   filter(TagID %in% tags$wst_2012.TagID) 

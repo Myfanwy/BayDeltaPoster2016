@@ -180,29 +180,21 @@ $(document).ready(function () {
 <p>Chinook salmon: four years of estimates for the fish tagged in fall 2012, 2013, 2014, and 2015.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh5YnApXG5saWJyYXJ5KGZpc2h0cmFja3IpXG5saWJyYXJ5KHRpZHl2ZXJzZSlcblxuYGBgIn0= -->
-<pre class="r"><code>library(ybp)
-library(fishtrackr)
-library(tidyverse)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5cbmBgYCJ9 -->
+<pre class="r"><code>library(tidyverse)
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiTG9hZGluZyB0aWR5dmVyc2U6IHRpYmJsZVxuTG9hZGluZyB0aWR5dmVyc2U6IHRpZHlyXG5Mb2FkaW5nIHRpZHl2ZXJzZTogcmVhZHJcbkxvYWRpbmcgdGlkeXZlcnNlOiBwdXJyclxuTG9hZGluZyB0aWR5dmVyc2U6IGRwbHlyXG5Db25mbGljdHMgd2l0aCB0aWR5IHBhY2thZ2VzIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5maWx0ZXIoKTogZHBseXIsIHN0YXRzXG5sYWcoKTogICAgZHBseXIsIHN0YXRzXG4ifQ== -->
-<pre><code>Loading tidyverse: tibble
+<!-- rnb-output-begin eyJkYXRhIjoiTG9hZGluZyB0aWR5dmVyc2U6IGdncGxvdDJcbkxvYWRpbmcgdGlkeXZlcnNlOiB0aWJibGVcbkxvYWRpbmcgdGlkeXZlcnNlOiB0aWR5clxuTG9hZGluZyB0aWR5dmVyc2U6IHJlYWRyXG5Mb2FkaW5nIHRpZHl2ZXJzZTogcHVycnJcbkxvYWRpbmcgdGlkeXZlcnNlOiBkcGx5clxuQ29uZmxpY3RzIHdpdGggdGlkeSBwYWNrYWdlcyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbmZpbHRlcigpOiBkcGx5ciwgc3RhdHNcbmxhZygpOiAgICBkcGx5ciwgc3RhdHNcbiJ9 -->
+<pre><code>Loading tidyverse: ggplot2
+Loading tidyverse: tibble
 Loading tidyverse: tidyr
 Loading tidyverse: readr
 Loading tidyverse: purrr
 Loading tidyverse: dplyr
-Conflicts with tidy packages -----------------------------------------------------------------------------------------------------
+Conflicts with tidy packages ---------------------------------------------------------------------
 filter(): dplyr, stats
 lag():    dplyr, stats</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYSA8LSBhbGx0YWdzXG5ncm91cHMgPC0gc3BsaXQoYSwgYSRgVGFnZ2luZyBHcm91cGApXG5nIDwtIG1hcChncm91cHMsIHNlbGVjdCwgVGFnSUQpICMgc2VsZWN0cyBvbmx5IHRoZSBUYWdJRCBjb2x1bW4gb2YgZWFjaCBkYXRhZnJhbWVcbnRhZ3MgPC0gdW5saXN0KGcsIHJlY3Vyc2l2ZSA9IEZBTFNFKSAjIGhhdmUgdG8gdW5saXN0IHRoZSBmaXJzdCBsZXZlbCB0byBiZSBhYmxlIHRvIG1hbmlwdWxhdGUgd2l0aCB0aGVzZSBhcyB2ZWN0b3JzXG5kIDwtIGFsbDY5a2h6X2dyb3VwZWQgIyBhbGwgZGV0ZWN0aW9ucywgd2l0aCBncm91cGVkIGdhdGVkIHJlY2VpdmVyc1xuYGBgIn0= -->
-<pre class="r"><code>a &lt;- alltags
-groups &lt;- split(a, a$`Tagging Group`)
-g &lt;- map(groups, select, TagID) # selects only the TagID column of each dataframe
-tags &lt;- unlist(g, recursive = FALSE) # have to unlist the first level to be able to manipulate with these as vectors
-d &lt;- all69khz_grouped # all detections, with grouped gated receivers</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBXaGl0ZSBzdHVyZ2VvbiByZXNpZGVuY2UgaW4gMjAxMi0tLS0tLS0tLS0tLS0tLS0tLVxuXG53c3QxMiA8LSBkMyAlPiUgXG4gIGZpbHRlcihEYXRlVGltZVVUQyA+IFwiMjAxMi0wNi0wMSAwMDowMDowMFwiLCBEYXRlVGltZVVUQyA8ICcyMDEzLTA1LTMxIDIzOjU5OjU5JykgIyBrZWVwIGluIG1pbmQgdGhhdCB0aGlzIGlzIGFsbCBpbiBVVEMgc3RpbGxcblxuZnBfd3N0MTIgPC0gZmlzaHBhdGhzKHdzdDEyLCB3c3QxMiRUYWdJRCwgd3N0MTIkU3RhdGlvbilcblxuZnBfd3N0MTIgPC0gZnBfd3N0MTIgJT4lIFxuICBhcnJhbmdlKGFycml2YWwpICU+JSBcbiAgbXV0YXRlKHJlc2lkZW5jZSA9IGRlcGFydHVyZSAtIGFycml2YWwpXG4gIFxudW5pdHMoZnBfd3N0MTIkcmVzaWRlbmNlKSA8LSBcImRheXNcIlxuXG5mcF93c3QxMiAlPiUgXG4gIGZpbHRlcihyZXNpZGVuY2UgPD0gNykgIyBmaWx0ZXIgb3V0IGVuY291bnRlcnMgZXF1YWwgdG8gb3IgbG9uZ2VyIHRoYW4gNyBjb25zZWN1dGl2ZSBkYXlzXG5cbmZpcnN0bGFzdF93c3QxMiA8LSBmcF93c3QxMiAlPiUgXG4gIGdyb3VwX2J5KFRhZ0lEKSAlPiUgXG4gIHN1bW1hcmlzZShmaXJzdGFycml2YWwgPSBtaW4oYXJyaXZhbCksIGxhc3RkZXBhcnR1cmUgPSBtYXgoZGVwYXJ0dXJlKSkgJT4lIFxuICBtdXRhdGUodG90YWxyZXMgPSBsYXN0ZGVwYXJ0dXJlIC0gZmlyc3RhcnJpdmFsKSBcblxudW5pdHMoZmlyc3RsYXN0X3dzdDEyJHRvdGFscmVzKSA8LSBcImRheXNcIlxuZmlyc3RsYXN0X3dzdDEyJHRhZ2dpbmdfZ3JvdXAgPC0gXCJ3c3QxMlwiXG5cbm1lYW5yZXNfd3N0MTIgPC0gZmlyc3RsYXN0X3dzdDEyICU+JSBcbiAgc3VtbWFyaXNlKG1lYW5yZXMgPSBtZWFuKHRvdGFscmVzKSwgc2RyZXMgPSBzZCh0b3RhbHJlcyksIG4gPSBsZW4oVGFnSUQpKSAjIHdvcmtzOyBtb3ZlIHRvIG5ldyBzY3JpcHQgdG8gY29tcGxldGUgY2FsY3VsYXRpb25zXG5cbm1lYW5yZXNfd3N0MTJcblxuXG5gYGAifQ== -->
