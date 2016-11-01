@@ -1,6 +1,7 @@
 # Circular bar plot
 
 library(ggplot2)
+library(viridis)
 
 # data has to look like: group = chn or wst, value = percentage of the year that they're present.
 
@@ -56,8 +57,7 @@ d2 <- d %>%
                  )
                )
              )
-           )
-  )
+           ) )
 
 # filter for false dets
 d2 <- d2 %>% 
@@ -74,18 +74,22 @@ d3$resdays = d3$maxdet - d3$mindet
 ggplot(d3, aes(x = detyear, y = as.numeric(resdays), group = Sp)) + geom_line(aes(color = Sp))
 
 d3$percyear <- (as.numeric(d3$resdays)/365.25)*100
+d3 <- filter(d3, detyear != "2011", detyear != "2012")
 
 ggplot(d3, aes(x = detyear, y = percyear ,fill = Sp)) + 
-  geom_bar(width = 0.75, stat="identity") +    
+  geom_bar(width = 0.85, stat="identity", position = "dodge") +    
   
   # To use a polar plot and not a basic barplot
-  coord_polar(theta = "y", start = 3) +    
+   coord_polar(theta = "y", start = 3) +    
   
   #Remove useless labels of axis
-  xlab("") + ylab("")  + ylim(c(0, 100)) +
+  xlab("") + ylab("")  + ylim(c(0, 100)) + 
   
   # facet by detyear
-  facet_wrap(~Sp) + scale_fill_manual(values = viridis(2, option = "C", alpha = 0.8))
+   facet_wrap(~detyear) + 
+  
+  scale_fill_manual(values = viridis(2, option = "C", alpha = 0.8)) +
+  theme(axis.text.x = element_blank())
 
 # Do Separately to get the offsets correctly aligned with the year
 library(ggthemes)
@@ -93,18 +97,26 @@ monthsabb <- month.abb
 breaks <- seq(0, 100, by = 8.34)
 
 d3 %>% 
-  filter(Sp == "chn", detyear != "2011") %>% 
+  filter(detyear == "2013") %>% 
   ggplot(aes(x = detyear, y = percyear, fill = Sp)) + 
-  geom_bar(width = 0.75, stat="identity", alpha = 0.8) +    
+  geom_bar(width = 0.85, stat="identity", position = "dodge", alpha = 0.8) +    
     coord_polar(theta = "y", start = 3) +    
     xlab("") + ylab("")  + ylim(c(0, 100)) +
-    scale_fill_manual(values = "#0D0887FF") + ggtitle("Chinook Salmon Residence By Year") +
+  scale_fill_manual(values = viridis(2, option = "C", alpha = 0.8)) + 
+  ggtitle("Chinook Salmon Residence By Year") +
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
           legend.position = "none")
 
-test = data.frame(months = 1:12, values = runif(12))
+test = data.frame(months = monthsabb, values = c(rep(3, 6), rep(12, 6)))
 test
 
-ggplot(test, aes(x = months, y = values)) + geom_bar(width = 0.75, stat = "identity", alpha = 0.8) + 
-  coord_polar(theta = "y")
+ggplot(test, aes(x = values, y = months)) + geom_bar(stat = "identity") + scale_y_discrete() +
+  coord_polar(theta = "y") 
+
+## don't think the circular calendar is going to work.  Might as well do 3 different timevises:
+library(timevis)
+head(d3)
+?timevis
+names(d3) <- c("detyear", "content", "start", "end", "resdays", "percyear")
+timevis(d3, showZoom = FALSE)
