@@ -119,4 +119,7 @@ library(timevis)
 head(d3)
 ?timevis
 names(d3) <- c("detyear", "content", "start", "end", "resdays", "percyear")
+d3$type <- 'range'
+d3$id <- d3$content
+d3$group <- d3$content
 timevis(d3, showZoom = FALSE)
