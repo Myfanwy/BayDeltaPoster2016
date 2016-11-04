@@ -1,8 +1,8 @@
 # Circular bar plot
-
-library(ggplot2)
+library(ybp)
+library(fishtrackr)
 library(viridis)
-
+library(tidyverse)
 # data has to look like: group = chn or wst, value = percentage of the year that they're present.
 
 # most white sturgeon present from late October - early April.
@@ -123,3 +123,60 @@ d3$type <- 'range'
 d3$id <- d3$content
 d3$group <- d3$content
 timevis(d3, showZoom = FALSE)
+
+# Still not what we want.  Back to ggplot2:
+d3 %>% 
+  filter(detyear == "2012") %>% 
+ggplot(.) +
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+               lineend = "round", show.legend = FALSE) + 
+  scale_color_viridis(discrete = TRUE, option = "D") + 
+  scale_x_datetime(date_breaks = "2 months", date_labels = "%b-%y", limits = c(as.POSIXct("2012-07-01"),
+                                                                               as.POSIXct("2013-06-01"))) 
+d3 %>% 
+  filter(detyear == "2012") %>% 
+  ggplot(.) +
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+               lineend = "round", show.legend = FALSE) + 
+  scale_color_viridis(discrete = TRUE, option = "D") + 
+  scale_x_datetime(date_breaks = "2 months", date_labels = "%b-%y", 
+                   limits = c(as.POSIXct("2012-07-01"),as.POSIXct("2013-06-01"))) +
+  theme(axis.text.y = element_blank(),
+             axis.ticks.y = element_blank()) +
+  labs(x = "Month", title = "2012 - 2013", y = " ")
+
+d3 %>% 
+  filter(detyear == "2013") %>% 
+  ggplot(.) +
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+               lineend = "round", show.legend = FALSE) + 
+  scale_color_viridis(discrete = TRUE, option = "D") + 
+  scale_x_datetime(date_breaks = "2 months", date_labels = "%b-%y", 
+                   limits = c(as.POSIXct("2013-07-01"), as.POSIXct("2014-06-01"))) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  labs(x = "Month", title = "2013 - 2014", y = " ")
+
+d3 %>% 
+  filter(detyear == "2014") %>% 
+  ggplot(.) +
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+               lineend = "round", show.legend = FALSE) + 
+  scale_color_viridis(discrete = TRUE, option = "D") + 
+  scale_x_datetime(date_breaks = "2 months", date_labels = "%b-%y", 
+                   limits = c(as.POSIXct("2014-07-01"), as.POSIXct("2015-06-01"))) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  labs(x = "Month", title = "2014 - 2015", y = " ")
+
+d3 %>% 
+  filter(detyear == "2015") %>% 
+  ggplot(.) +
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+               lineend = "round", show.legend = FALSE) + 
+  scale_color_viridis(discrete = TRUE, option = "D") + 
+  scale_x_datetime(date_breaks = "2 months", date_labels = "%b-%y", 
+                   limits = c(as.POSIXct("2015-07-01"), as.POSIXct("2016-06-01"))) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  labs(x = "Month", title = "2015 - 2016", y = " ")

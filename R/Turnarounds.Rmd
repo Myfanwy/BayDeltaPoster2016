@@ -1,0 +1,104 @@
+---
+title: "Turnarounds by Species"
+output: html_notebook
+---
+
+
+```{r echo=FALSE, include=FALSE, cache=TRUE}
+library(ybp)
+library(fishtrackr)
+library(tidyverse)
+library(lubridate)
+
+d <- all69khz_grouped
+
+d2 <- d %>% 
+  arrange(DateTimeUTC) %>% 
+  mutate(detyear = 
+           ifelse(
+             DateTimeUTC > "2011-07-01 00:00:00" & DateTimeUTC < "2012-06-30 00:00:00", "2011",
+             ifelse(
+               DateTimeUTC > "2012-07-01 00:00:00" & DateTimeUTC < "2013-06-30 00:00:00", "2012",
+               ifelse(
+                 DateTimeUTC > "2013-07-01 00:00:00" & .$DateTimeUTC < "2014-06-30 00:00:00", "2013",
+                 ifelse(
+                   DateTimeUTC > "2014-07-01 00:00:00" & DateTimeUTC < "2015-06-30 00:00:00", "2014", "2015"
+                 )
+               )
+             )
+           ) )
+
+# filter for false dets
+d2 <- d2 %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  ungroup() %>% 
+  arrange(DateTimeUTC)
+head(d2)
+```
+
+
+First and Last Detection Locations By Year
+```{r}
+fl <- split(d2, as.factor(d2$detyear))
+
+range(fl$`2011`$DateTimeUTC)
+
+fl11 <- fl$`2011` %>% 
+  group_by(TagID) %>% 
+  arrange(DateTimeUTC) %>% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl11 %>% 
+  group_by(last) %>% 
+  summarise(loc = n()) 
+
+# in 2011, only 1 fish disappeared in the YB.  Total of 5 fish last detected in ybp; leaves 62 fish that made it out.
+
+fl12wst <- fl$`2012` %>% 
+  filter(Sp == "wst") %>% 
+  group_by(TagID) %>% 
+  arrange(DateTimeUTC) %>% 
+  filter(!duplicated(DateTimeUTC)) %>% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl12wst %>% 
+  group_by(last) %>% 
+  summarise(loc = n()) 
+# in 2012, 3 fish last detected above BC; have to figure out the total number of fish in 2012 wst
+
+d2 %>% 
+  group_by(detyear, Sp) %>% 
+  summarise(nfish = len(TagID))
+
+# So out of 22 fish that came back in fall of 2012, 19 "made it out"
+
+fl12chn <- fl$`2012` %>% 
+  filter(Sp == "chn") %>% 
+  group_by(TagID) %>% 
+  arrange(DateTimeUTC) %>% 
+  filter(!duplicated(DateTimeUTC)) %>% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl12chn %>% 
+  group_by(last) %>% 
+  summarise(loc = n()) 
+# 3 Chinook made it out
+
+fl13wst <- fl$`2013` %>% 
+  filter(Sp == "wst") %>% 
+  group_by(TagID) %>% 
+  arrange(DateTimeUTC) %>% 
+  filter(!duplicated(DateTimeUTC)) %>% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl13wst %>% 
+  group_by(last) %>% 
+  summarise(loc = n()) 
+```
+
+
