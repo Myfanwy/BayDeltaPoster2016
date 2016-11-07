@@ -171,8 +171,6 @@ dp <- dp %>%
   ungroup()
 range(dp$transit_time) # we still have negative transit times, even after filtering for BC_joints - let's see what that's about:
 
-
-
 dp2 <- dp %>% 
   group_by(detyear, TagID) %>% 
   arrange(move_num) %>% 
@@ -195,6 +193,7 @@ ggplot(dp3, aes(x = Sp, y = rate)) +
 ggplot(dp3) +
   geom_density(aes(x = rate, color = Sp)) + facet_wrap(~detyear, scales = "free_x")
 
+# begin modeling 
 library(rethinking)  
 d1 <- filter(dp3, detyear == "2013")
 d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
