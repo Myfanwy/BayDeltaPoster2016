@@ -186,11 +186,11 @@ dp3 <- dp2 %>%
 
 range(dp3$meanrate, na.rm = TRUE)
 
-ggplot(dp3, aes(x = Sp, y = rate)) + 
+ggplot(dp2, aes(x = Sp, y = rate)) + 
   geom_boxplot(alpha = 0.6) + 
   geom_jitter(aes(color = Sp), size = 2, width= 0.8,    alpha = 0.1) + facet_wrap(~detyear)
 
-ggplot(dp3) +
+ggplot(dp2) +
   geom_density(aes(x = rate, color = Sp)) + facet_wrap(~detyear, scales = "free_x")
 
 # begin modeling 
@@ -199,14 +199,20 @@ d1 <- filter(dp3, detyear == "2013")
 d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
 d1 <- as.data.frame(d1)
 
+
 m <- map(flist = alist(
   rate ~ dnorm(mean = mu, sd = sigma) ,
+  
   mu <- a + bSp*dSp,
-  a ~ dnorm(0, 10) ,
-  bSp ~ dnorm(0, 1),
+  
+  a ~ runif(0, 20) ,
+  
+  bSp ~ dnorm(0, 5),
+  
   sigma ~ dunif(0,10)
 ),
 start = list(a=1, sigma = 5), data = d1 )
+
 precis(m) # shows an increase of 0.53km/hour for chinook than for white sturgeon.  But that's just in 2013, when there were many more chn than white sturgeon.
 
 d1all <- as.data.frame(dp3)
