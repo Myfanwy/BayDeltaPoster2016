@@ -65,66 +65,49 @@ d2 <- d2 %>%
   filter(DateTimeUTC >= DateTagged) %>% 
   arrange(DateTimeUTC)
 
-d3 <- d2 %>% 
+# filter for shed tags
+
+d3 <- fishpaths(d2, d2$TagID, d2$Station)
+d3$residence <- d3$departure - d3$arrival
+units(d3$residence) = "days"
+sheds <- filter(d3, residence > 7) # filter out encounters equal to or longer than 7 consecutive days
+len(sheds$TagID)
+
+d3 <- filter(d2, !(TagID %in% sheds$TagID))
+len(d3$TagID) # should be 221-6 = 215
+
+d3 <- d3 %>% 
   group_by(detyear, Sp) %>% 
   summarise(mindet = min(DateTimeUTC), maxdet = max(DateTimeUTC))
 head(d3)
 
 d3$resdays = d3$maxdet - d3$mindet
-ggplot(d3, aes(x = detyear, y = as.numeric(resdays), group = Sp)) + geom_line(aes(color = Sp))
-
 d3$percyear <- (as.numeric(d3$resdays)/365.25)*100
-d3 <- filter(d3, detyear != "2011", detyear != "2012")
+d3 <- filter(d3, detyear != "2011") # don't count the spring of 2012
 
-ggplot(d3, aes(x = detyear, y = percyear ,fill = Sp)) + 
-  geom_bar(width = 0.85, stat="identity", position = "dodge") +    
-  
-  # To use a polar plot and not a basic barplot
-   coord_polar(theta = "y", start = 3) +    
-  
-  #Remove useless labels of axis
-  xlab("") + ylab("")  + ylim(c(0, 100)) + 
-  
-  # facet by detyear
-   facet_wrap(~detyear) + 
-  
-  scale_fill_manual(values = viridis(2, option = "C", alpha = 0.8)) +
-  theme(axis.text.x = element_blank())
-
-# Do Separately to get the offsets correctly aligned with the year
-library(ggthemes)
-monthsabb <- month.abb
-breaks <- seq(0, 100, by = 8.34)
-
-d3 %>% 
-  filter(detyear == "2013") %>% 
-  ggplot(aes(x = detyear, y = percyear, fill = Sp)) + 
-  geom_bar(width = 0.85, stat="identity", position = "dodge", alpha = 0.8) +    
-    coord_polar(theta = "y", start = 3) +    
-    xlab("") + ylab("")  + ylim(c(0, 100)) +
-  scale_fill_manual(values = viridis(2, option = "C", alpha = 0.8)) + 
-  ggtitle("Chinook Salmon Residence By Year") +
-    theme(axis.text = element_blank(),
-          axis.ticks = element_blank(),
-          legend.position = "none")
-
-test = data.frame(months = monthsabb, values = c(rep(3, 6), rep(12, 6)))
-test
-
-ggplot(test, aes(x = values, y = months)) + geom_bar(stat = "identity") + scale_y_discrete() +
-  coord_polar(theta = "y") 
-
-## don't think the circular calendar is going to work.  Might as well do 3 different timevises:
-library(timevis)
-head(d3)
-?timevis
-names(d3) <- c("detyear", "content", "start", "end", "resdays", "percyear")
-d3$type <- 'range'
-d3$id <- d3$content
-d3$group <- d3$content
-timevis(d3, showZoom = FALSE)
 
 # Still not what we want.  Back to ggplot2:
+d3$detyear <- factor(d3$detyear, labels = c(  "2012 - 2013",
+                                                      "2013 - 2014",
+                                                      "2014 - 2015",
+                                                      "2015 - 2016"))
+calplot <- d3 %>% 
+  ggplot(.) +
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+               lineend = "round", show.legend = FALSE) + 
+  scale_color_viridis(discrete = TRUE, option = "D") + 
+  scale_x_datetime(date_breaks = "1 month", date_labels = "%b-%y") +
+  facet_wrap(~detyear, nrow = 4, scales = "free_x", labeller = label_value) +
+  labs(x = "", y = "", title = "Seasonal residence patterns of white sturgeon and Chinook salmon, fall 2012 - spring 2016")
+
+# Poster Plot -------------------------------------------------------------
+
+
+calplot + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+                plot.title = element_text(hjust = 0.5))
+
+
+# - ------- Individual year plots ------------------------------------
 d3 %>% 
   filter(detyear == "2012") %>% 
 ggplot(.) +
@@ -180,3 +163,47 @@ d3 %>%
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank()) +
   labs(x = "Month", title = "2015 - 2016", y = " ")
+
+
+# One last shot at the calendar heatmap in case it's better
+
+
+d2$day <- as.Date(d2$DateTimeUTC)
+densmap <- transform(d2,
+                     week = as.POSIXlt(day)$yday %/% 7 + 1,
+                     wday = as.POSIXlt(day)$wday,
+                     year = as.POSIXlt(day)$year + 1900)
+
+# plot by species
+library(scales)
+
+densmap <- filter(densmap, detyear != "2011")
+densmap$x <- as.Date(densmap$week, origin = "2011-01-01") # does not work
+densmap$x <- as.POSIXct(densmap$x)
+densmap$detyear <- factor(densmap$detyear, labels = c("2012-2013",
+                                                      "2013-2014",
+                                                      "2014-2015",
+                                                      "2015-2016"))
+p <- ggplot(densmap, aes(x = x, y = wday, fill = Sp)) + 
+  
+  geom_tile(colour = "white", alpha = 0.5) + 
+  
+  scale_fill_manual(values = c("blue", "yellow")) +
+  
+  facet_wrap(~detyear, ncol = 1, labeller = label_value, scales = "free_x")
+
+p + labs(title = "Presence in the Yolo Bypass By Species and Detection Year", x = " ",
+         y = "Weekday") + theme(axis.text.x = element_blank(),
+                                axis.ticks.x = element_blank())
+
+p + scale_x_datetime(date_breaks = "1 month", labels = date_format("%b"))
+
+# plot by number of fish in the system:
+
+ggplot(densmap, aes(x = week, y = wday, group = Sp, fill = nfish)) + 
+  
+  geom_tile(aes(color = Sp), colour = "white", alpha = 0.6) + 
+  
+  #  scale_fill_viridis() +
+  
+  facet_wrap(~detyear, ncol = 1, labeller = label_value )

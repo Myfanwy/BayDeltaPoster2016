@@ -1,0 +1,102 @@
+---
+title: "Movement Rates"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+
+```{r cache=TRUE}
+library(tidyverse)
+library(ybp)
+library(fishtrackr)
+library(lubridate)
+library(viridis)
+library(beepr)
+
+d <- all69khz_grouped
+
+# filter for false dets
+d2 <- d %>% 
+  group_by(TagID) %>% 
+  filter(DateTimeUTC >= DateTagged) %>% 
+  arrange(DateTimeUTC)
+
+# filter for shed tags
+
+d3 <- fishpaths(d2, d2$TagID, d2$Station)
+beep()
+d3$residence <- d3$departure - d3$arrival
+units(d3$residence) = "days"
+sheds <- filter(d3, residence > 7) # filter out encounters equal to or longer than 7 consecutive days
+
+len(sheds$TagID)
+
+# Now filter out those long-res IDs:
+d3 <- filter(d2, !(TagID %in% sheds$TagID))
+len(d3$TagID) # should be 221-6 = 215
+
+# now call fishpaths on d3, add detyear later:
+d3 <- fishpaths(d3, d3$TagID, d3$Station)
+beep()
+d3 <- d3 %>% 
+  group_by(TagID) %>% 
+  arrange(arrival) %>% # very important to arrange these correctly
+  ungroup()
+```
+
+Where `d3` is a dataframe of all the fishtracks:
+```{r}
+# what the full dataset looks like:
+head(d3)
+```
+```{r}
+# First try with one fish.
+test <- filter(d3, TagID == 2841)
+head(test)
+```
+
+```{r}
+# calculate the transit times for each movement, even the useless ones
+test$transittime <- "NA"
+for(i in 1:length(test$departure)) {
+  test$transittime[i] =  difftime(test$arrival[i+1], test$departure[i], units = "hours")
+}
+
+test$transittime <- as.numeric(test$transittime) # transittime is now still in hours, but numeric so that I can convert it to a rate later on
+head(select(test, TagID, Station, arrival, departure, transittime))
+```
+
+```{r}
+# We can see that this fish goes from Rstr_joint to BC_joint and back to Rstr_joint, but there are some encounters in there at BC_joint that represent a movement distance of 0.  I don't want those movements included in transit rate calculation, so I create a unique ID for each meaningful movement in order to filter them out later:
+
+test$move_num <- cumsum(!duplicated(test$Station) | c(F, abs(diff(test$Rkm)) > 0)) # creates a grouping ID for every time a fish changes stations (i.e. the difference in riverkm is > 0)
+
+# the result is:
+head(select(test, TagID, Station, arrival, departure, transittime, move_num))
+```
+
+```{r}
+# Now that I have them grouped, I need to grab the right rows: if there's only one move_num ID, give me that one.  If there are multiples of the same group number, give me the last of those, since that's the row that precedes a meaningful movement.  I can do this with dplyr and slice(length()):
+
+test2 <- test %>% 
+  group_by(move_num) %>% 
+  slice(length(move_num)) %>% 
+  ungroup()
+
+# And the result:
+head(select(test2, TagID, Station, arrival, departure, move_num)) 
+```
+
+```{r}
+# for-loop to calculate difference in river kilometer, in preparation for calculating a rate:
+test2$diffRkm <- "NA"
+for (i in 1:length(test2$Rkm)) {
+  test2$diffRkm[i] = abs(test2$Rkm[i+1] - test2$Rkm[i])
+}
+
+# finally, calculate the movement rate as a new column:
+test2$rate <- test2$transittime/as.numeric(test2$diffRkm)
+mean(test2$rate, na.rm = TRUE) 
+
+```
