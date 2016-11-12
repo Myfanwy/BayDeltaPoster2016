@@ -1,0 +1,88 @@
+---
+title: "Fall-run Adult Chinook Salmon Study 2016 Report"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(fig.width = 7.5, fig.height = 6, cache = TRUE)
+ipak <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# usage
+packages <- c("ggplot2", "dplyr", "ybp", "fishtrackr", "reshape2", "RColorBrewer", "lubridate")
+ipak(packages)
+```
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+load(file = "../data_tidy/YBdets_FCA2015.Rda") #generates object f; this is just all the Yolo Bypass detections for the FCA2015 fish
+library(lubridate)
+## filter out tag day detections #-------------
+f$DateTagged_hms <- "12:00:00"
+f$Datepaste <- format(as.POSIXct(paste(f$DateTagged, f$DateTagged_hms)), "%Y-%m-%d %H:%M:%S")
+f$DateTagged_full <- ymd_hms(f$Datepaste)
+f$DateTagged <- f$DateTagged_full
+f2 <- f %>% 
+  group_by(TagID) %>%
+  mutate(tagdetthreshold = DateTagged + 60*60*24) %>% 
+  filter(DateTimeUTC > tagdetthreshold) #3600 less detections
+#----------------------------------------------------
+f <- select(f2, -DateTagged_full, -Datepaste, -DateTagged_hms, -tagdetthreshold) # get back to the columns we want
+
+# Can now run fishpaths function
+f <- fishpaths(f, f$TagID, f$Station)
+# fix time zones of arrival and departure columns
+f$arrival <- format(f$arrival, tz="Pacific/Pitcairn", usetz=TRUE)
+f$departure <- format(f$departure, tz="Pacific/Pitcairn", usetz=TRUE)
+f$hour_arr <- hour(f$arrival)
+f$hour_dep <- hour(f$departure)
+
+deps <- f %>% 
+  group_by(hour_dep, Station) %>% 
+  tally()
+
+arrs <- f %>% 
+  group_by(hour_arr, Station) %>% 
+  tally()
+
+arrivalsbystation <- ggplot(arrs, aes(x = hour_arr, y = n)) + 
+  geom_bar(stat = "identity", fill = "darkgreen") + 
+  coord_polar(start = 0) + 
+  facet_wrap(~Station, nrow = 3) + 
+  ggtitle("Arrival Times in PST After Filtering For Tag Day Detections") +
+  labs(x = "", y = "")
+
+depsbystation <- ggplot(deps, aes(x = hour_dep, y = n)) + 
+  geom_bar(stat = "identity", fill = "blue") + 
+  coord_polar(start = 0) + facet_wrap(~Station, nrow = 3) + 
+  ggtitle("Times of Departure in PST After Filtering for Tag Day Detections") +
+  labs(x = "", y = "")
+
+arrivalsbystation
+depsbystation
+
+allarrivals <- ggplot(arrs, aes(x = hour_arr, y = n)) + 
+  geom_bar(stat = "identity", fill = "darkgreen") + 
+  coord_polar(start = 0) + 
+  ggtitle("Arrival Times in PST") +
+  labs(x = "", y = "")
+
+alldeps <- ggplot(deps, aes(x = hour_dep, y = n)) + 
+  geom_bar(stat = "identity", fill = "blue") + 
+  coord_polar(start = 0) +
+  ggtitle("Times of Departure in PST") +
+  labs(x = "", y = "")
+
+allarrivals
+alldeps
+```
+
+

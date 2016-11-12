@@ -142,6 +142,9 @@ mean(chk3$rate, na.rm = TRUE)
 
 
 ## Try on whole df:
+load("data_tidy/fishpaths11-15.Rdata")
+d3$residence <- d3$departure - d3$arrival
+units(d3$residence) <- "days"
 dp <- d3 %>% 
   filter(residence != 0) %>% # filter out single detections
   group_by(detyear, TagID) %>% 
@@ -152,10 +155,6 @@ range(dp$transit_time, na.rm = TRUE)
 dp$transit_time <- as.numeric(dp$transit_time)
 range(dp$transit_time, na.rm = TRUE)
 
-max <- dp %>% 
-  arrange(transit_time) %>% 
-  select(TagID, Station, arrival, departure, transit_time, Rkm)
-head(max) # there are some crazy values here - need to go back and spot-check with individual fish.
 
 # Filtering criteria: remove those transit_times that are greater than 50 days.
 
@@ -169,7 +168,7 @@ dp <- dp %>%
   group_by(detyear, TagID, move_num) %>% 
   slice(length(move_num)) %>% 
   ungroup()
-range(dp$transit_time) # we still have negative transit times, even after filtering for BC_joints - let's see what that's about:
+range(dp$transit_time) # good enough for first poster
 
 dp2 <- dp %>% 
   group_by(detyear, TagID) %>% 
@@ -180,16 +179,30 @@ dp2 <- dp %>%
   filter(rate < 100)
 range(dp2$rate, na.rm = TRUE)
 
-dp3 <- dp2 %>% 
-  group_by(detyear, TagID) %>% 
-  mutate(meanrate = mean(rate, na.rm = TRUE)) 
 
-range(dp3$meanrate, na.rm = TRUE)
+dp2$detyear <- factor(dp2$detyear, labels = c(  "2011 - 2012",
+                                              "2012 - 2013",
+                                              "2013 - 2014",
+                                              "2014 - 2015",
+                                              "2015 - 2016"))
+dp2 <- filter(dp2, detyear != "2011 - 2012")
+rateplot <- ggplot(dp2, aes(x = Sp, y = rate)) + 
+  geom_violin(scale = "count", alpha = 0.6) +
+  geom_jitter(aes(color = Sp), size = 2.5, width= 0.6,    alpha = 0.25) + 
+  scale_color_viridis(discrete = TRUE, option = "D") +
+  facet_wrap(~detyear, nrow = 1, labeller = label_value)
 
-ggplot(dp2, aes(x = Sp, y = rate)) + 
-  geom_boxplot(alpha = 0.6) + 
-  geom_jitter(aes(color = Sp), size = 2, width= 0.8,    alpha = 0.1) + facet_wrap(~detyear)
+# Poster Plot -------------------------------------------------------------
 
+rateplot <- rateplot + labs(x = "", y = "Movement Rate (km/hr)")
+
+rateplot + theme( text = element_text(size = 18),
+              axis.text.x = element_blank(), axis.ticks.y = element_blank(),
+                plot.title = element_text(hjust = 0.5),
+                legend.position = "none")
+
+
+# - ------- Individual year plots ------------------------------------
 ggplot(dp2) +
   geom_density(aes(x = rate, color = Sp)) + facet_wrap(~detyear, scales = "free_x")
 
