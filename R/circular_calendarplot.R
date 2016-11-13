@@ -3,6 +3,7 @@ library(ybp)
 library(fishtrackr)
 library(viridis)
 library(tidyverse)
+library(beepr)
 # data has to look like: group = chn or wst, value = percentage of the year that they're present.
 
 # most white sturgeon present from late October - early April.
@@ -93,20 +94,25 @@ d3$detyear <- factor(d3$detyear, labels = c(  "2012 - 2013",
                                                       "2015 - 2016"))
 calplot <- d3 %>% 
   ggplot(.) +
-  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=8,
+  geom_segment(aes(x=mindet, xend=maxdet, y=Sp, yend=Sp, color = Sp), size=9,
                lineend = "round", show.legend = FALSE) + 
   scale_color_viridis(discrete = TRUE, option = "D") + 
   scale_x_datetime(date_breaks = "1 month", date_labels = "%b-%y") +
   facet_wrap(~detyear, nrow = 4, scales = "free_x", labeller = label_value) +
-  labs(x = "", y = "", title = "Seasonal residence patterns of white sturgeon and Chinook salmon, fall 2012 - spring 2016")
+  labs(x = "", y = "", title = "Seasonal Residence, Fall 2012 - Spring 2016")
 
 # Poster Plot -------------------------------------------------------------
 
 
 calplot + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-                plot.title = element_text(hjust = 0.5))
+                plot.title = element_text(hjust = 0.5),
+                text = element_text(size = 20),
+                axis.text.x = element_text(size = 14),
+                axis.title.x = element_blank(),
+                plot.title = element_text(hjust = 0.5),
+                legend.position = "none")
 
-
+ggsave(filename = "figures/calendarplot.jpg", width = 8, height = 10, units = "in")
 # - ------- Individual year plots ------------------------------------
 d3 %>% 
   filter(detyear == "2012") %>% 

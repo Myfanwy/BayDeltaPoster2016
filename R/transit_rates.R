@@ -66,6 +66,8 @@ head(select(d3, arrival, departure, detyear))
 tail(select(d3, arrival, departure, detyear))
 
 # Calculate transit time
+# or just 
+load(file = "data_tidy/fishpaths11-15.Rdata")
 
 d3 <- d3 %>% 
    group_by(detyear, TagID) %>% 
@@ -194,13 +196,14 @@ rateplot <- ggplot(dp2, aes(x = Sp, y = rate)) +
 
 # Poster Plot -------------------------------------------------------------
 
-rateplot <- rateplot + labs(x = "", y = "Movement Rate (km/hr)")
+rateplot <- rateplot + labs(x = "", y = "Movement Rate (km/hr)", title = "Movement Rate by Species and Year")
 
 rateplot + theme( text = element_text(size = 18),
-              axis.text.x = element_blank(), axis.ticks.y = element_blank(),
+              axis.text.x = element_blank(), axis.ticks.x = element_blank(),
                 plot.title = element_text(hjust = 0.5),
                 legend.position = "none")
 
+ggsave(filename = "figures/rateplot.jpg", width = 8, height = 5, units = "in")
 
 # - ------- Individual year plots ------------------------------------
 ggplot(dp2) +

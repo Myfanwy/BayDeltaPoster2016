@@ -69,6 +69,7 @@ tail(select(d3, arrival, departure, detyear))
 save(d3, file = "data_tidy/fishpaths11-15.Rdata")
 
 # Residence Time for Each fish, by year:
+load(file = "data_tidy/fishpaths11-15.Rdata")
 res <- d3 %>% 
   group_by(detyear, TagID, Sp) %>% 
   summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
@@ -91,12 +92,14 @@ resplot <- ggplot(res, aes(x = Sp, y = totalres)) +
   geom_jitter(aes(color = Sp), size = 3, width= 0.5,    alpha = 0.7) + 
   scale_color_viridis(discrete = TRUE, option = "D") +
   facet_wrap(~detyear, nrow = 1, labeller = label_value) +
-  labs(x = "", y = "Residence in the Yolo Bypass in Days")
+  labs(x = "", y = "Residence in Days", title = "Residence Time by Species and Year")
 
 resplot + theme(text = element_text(size = 18),
                 axis.text.x = element_blank(), axis.ticks = element_blank(),
                  plot.title = element_text(hjust = 0.5),
                  legend.position = "none")
+
+ggsave(filename = "figures/resplot.jpg", width = 8, height = 5, units = "in")
 
 
 # begin modeling 

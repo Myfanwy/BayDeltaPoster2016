@@ -38,6 +38,8 @@ len(d3$TagID) # should be 221-6 = 215
 
 # now call fishpaths on d3, add detyear later:
 d3 <- fishpaths(d3, d3$TagID, d3$Station)
+#or
+load(file = "~/Dropbox/GitHubRepos/BayDeltaPoster2016/data_tidy/fishpaths11-15.Rdata")
 beep()
 d3 <- d3 %>% 
   group_by(TagID) %>% 
