@@ -67,86 +67,12 @@ tail(select(d3, arrival, departure, detyear))
 
 # Calculate transit time
 # or just 
-load(file = "data_tidy/fishpaths11-15.Rdata")
-
-d3 <- d3 %>% 
-   group_by(detyear, TagID) %>% 
-   arrange(arrival) %>% 
-   mutate(residence = departure - arrival) %>% 
-   ungroup()
-units(d3$residence) <- "hours"
-head(d3)
-
-# Need to go row-by-row on times, and calculate the transit time in km/hr between the previous station and the current one.
-
-# First try with one fish.
-test <- filter(d3, TagID == 2841)
-test$transittime <- "NA"
-
-for(i in 1:length(test$departure)) {
-test$transittime[i] = 
-  difftime(test$arrival[i+1], test$departure[i], units = "hours")
-}
-
-str(test)
-test$transittime <- as.numeric(test$transittime) # transittime is now in hours, but numeric.
-
-test$move_num <- cumsum(!duplicated(test$Station) | c(F, abs(diff(test$Rkm)) > 0)) # for each unique Station, create a unique grouping variable if the following row has a difference in river kilometer (in other words, create a unique ID for each meaningful movement)
-
-# Now need to grab them by: if there's only one move_num ID, give me that one.  If there are multiples of the same number, give me the last of those multiples.
-
-test2 <- test %>% 
-  group_by(move_num) %>% 
-  slice(length(move_num)) %>% 
-  ungroup()
-
-test2$rate <- "NA"
-test2$diffRkm <- NULL
-for (i in 1:length(test2$Rkm)) {
-  test2$diffRkm[i] = abs(test2$Rkm[i+1] - test2$Rkm[i])
-}
-
-test2$rate <- test2$transittime/test2$diffRkm
-mean(test2$rate, na.rm = TRUE) # a little less than 1km/hr.  Cool.  Let's scale up.
-
-
-
-## With All The Fish:
-## Dplyr solution:
-
-dp <- d3 %>% 
-  group_by(detyear, TagID) %>% 
-  mutate(transit_time = difftime(lead(arrival), departure, units = "hours"))
-
-chk <- filter(dp, TagID == 2841)
-str(chk)
-chk$transit_time <- as.numeric(chk$transit_time)
-
-chk$move_num <- cumsum(!duplicated(chk$Station) | c(F, abs(diff(chk$Rkm)) > 0)) # creates a grouping ID for every time a fish changes stations (i.e. the difference in riverkm is > 0)
- chk2 <- chk %>% 
-  group_by(move_num) %>% 
-  slice(length(move_num)) %>% 
-  ungroup()
-
-# And the result:
-head(select(chk2, TagID, Station, arrival, departure, move_num)) 
-# for-loop to calculate difference in river kilometer, in preparation for calculating a rate:
-
-chk3 <- chk2 %>% 
-  group_by(TagID) %>% 
-  mutate(diffRkm = abs(lead(Rkm) - Rkm))
-
-chk3 <- select(chk3, TagID, Station,arrival, departure, Rkm, diffRkm, transit_time)
-
-chk3 <- chk3 %>% 
-  mutate(rate = diffRkm/transit_time)
-mean(chk3$rate, na.rm = TRUE)
-
 
 ## Try on whole df:
 load("data_tidy/fishpaths11-15.Rdata")
 d3$residence <- d3$departure - d3$arrival
 units(d3$residence) <- "days"
+library(dplyr)
 dp <- d3 %>% 
   filter(residence != 0) %>% # filter out single detections
   group_by(detyear, TagID) %>% 
@@ -210,30 +136,14 @@ ggplot(dp2) +
   geom_density(aes(x = rate, color = Sp)) + facet_wrap(~detyear, scales = "free_x")
 
 # begin modeling 
-library(rethinking)  
-d1 <- filter(dp3, detyear == "2013")
+
+detach("package:dplyr", unload=TRUE)
+library(rethinking) 
+d1 <- dp2
 d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
 d1 <- as.data.frame(d1)
-
-
-m <- map(flist = alist(
-  rate ~ dnorm(mean = mu, sd = sigma) ,
-  
-  mu <- a + bSp*dSp,
-  
-  a ~ runif(0, 20) ,
-  
-  bSp ~ dnorm(0, 5),
-  
-  sigma ~ dunif(0,10)
-),
-start = list(a=1, sigma = 5), data = d1 )
-
-precis(m) # shows an increase of 0.53km/hour for chinook than for white sturgeon.  But that's just in 2013, when there were many more chn than white sturgeon.
-
-d1all <- as.data.frame(dp3)
-d1all <- dplyr::filter(d1all, transit_time > 0)
-d1all$dSp <- ifelse(d1all$Sp == "chn", 1, 0)
+head(d1)
+range(d1$rate)
 
 m1a <- map(flist = alist(
   rate ~ dnorm(mean = mu, sd = sigma) ,
@@ -242,7 +152,18 @@ m1a <- map(flist = alist(
   bSp ~ dnorm(0, 1),
   sigma ~ dunif(0,10)
 ),
-start = list(a=1, sigma = 5), data = d1all )
-precis(m1a) # holy shit - when you take all the data into account, being a chn corresponds to a 0.89km/hr increase.
+start = list(a=1, sigma = 5), data = d1 )
 
+precis(m1a) # shows an increase of 0.53km/hour for chinook than for white sturgeon.  But that's just in 2013, when there were many more chn than white sturgeon.
+
+m1int <- map(flist = alist(
+  rate ~ dnorm(mean = mu, sd = sigma) ,
+  mu <- a,
+  a ~ dnorm(0, 10) ,
+  sigma ~ dunif(0,10)
+),
+start = list(a=1, sigma = 5), data = d1 )
+
+
+compare(m1a, m1int)
 

@@ -153,25 +153,43 @@ dets <- f %>%
 
 
 # -------------------- begin modeling 
-
+detach("package:dplyr", unload = TRUE)
 library(rethinking)  
 d1 <- dets
 d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
 d1 <- as.data.frame(d1)
 range(d1$narrs)
+str(d1)
 
-m <- map(flist = alist(
-  narrs ~ dnorm(mean = mu, sd = sigma) ,
-  
-  mu <- a + bSp*dSp,
-  
-  a ~ dnorm(1, 50) ,
-  
-  bSp ~ dnorm(0, 10),
-  
-  sigma ~ dnorm(0,25)
-),
-start = list(a=1, sigma = 5), data = d1 )
+chn_model <- map(
+  alist(
+    narrs ~ dnorm(mean = mu, sd = sigma) ,
+    mu <- a + bSp*dSp,
+    a ~ dnorm(0, 100) ,
+    bSp ~ dnorm(0, 50),
+    sigma ~ dcauchy(0,25)
+  ), data = d1, start = list(a = 50, sigma = 30))
+
+
+intc_model <- map(
+  alist(
+    narrs ~ dnorm(mean = mu, sd = sigma) ,
+    mu <- a,
+    a ~ dnorm(0, 100) ,
+    sigma ~ dcauchy(0,25)
+  ), data = d1, start = list(a = 50, sigma = 30))
+
+compare(chn_model, intc_model)
+
+
+
+
+
+
+
+
+
+
 
 precis(m, prob = 0.95) # shows an increase of 0.53km/hour for chinook than for white sturgeon.  But that's just in 2013, when there were many more chn than white sturgeon.
 

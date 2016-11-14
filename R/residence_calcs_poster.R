@@ -1,4 +1,5 @@
-# Transit Speed
+#residence calcs
+detach("package:rethinking", unload = TRUE)
 library(tidyverse)
 library(ybp)
 library(fishtrackr)
@@ -70,6 +71,10 @@ save(d3, file = "data_tidy/fishpaths11-15.Rdata")
 
 # Residence Time for Each fish, by year:
 load(file = "data_tidy/fishpaths11-15.Rdata")
+head(d3)
+d3$residence <- d3$departure - d3$arrival
+units(d3$residence) = "days"
+library(dplyr)
 res <- d3 %>% 
   group_by(detyear, TagID, Sp) %>% 
   summarise(firstarrival = min(arrival), lastdeparture = max(departure)) %>% 
@@ -102,40 +107,56 @@ resplot + theme(text = element_text(size = 18),
 ggsave(filename = "figures/resplot.jpg", width = 8, height = 5, units = "in")
 
 
-# begin modeling 
+# Summary table for poster
+restab <- res %>% 
+  group_by(detyear, Sp) %>% 
+  summarise(meanres = mean(totalres), sdres = sd(totalres))
+
+write.csv(restab, file = "data_tidy/restab.csv")
+
+# begin modeling
+head(res)
+d1 <- filter(res, detyear != "2011", totalres > 0)
+detach("package:dplyr", unload = TRUE)
 library(rethinking)  
-d1 <- filter(dp3, detyear == "2013")
-d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
+
+d1$species <- ifelse(d1$Sp == "chn", 1, 0)
+
+dens(d1$totalres) # See shape of raw data - skewed
+
+# compile relevant predictors/variables into list for running models
+
+
 d1 <- as.data.frame(d1)
+head(d1)
+#d1$totalres <- round(d1$totalres)
+range(d1$totalres)
 
 
-m <- map(flist = alist(
-  rate ~ dnorm(mean = mu, sd = sigma) ,
-  
-  mu <- a + bSp*dSp,
-  
-  a ~ runif(0, 20) ,
-  
-  bSp ~ dnorm(0, 5),
-  
-  sigma ~ dunif(0,10)
-),
-start = list(a=1, sigma = 5), data = d1 )
+# Trying with normal distributions
+d1 <- dplyr::select(d1, detyear, TagID, Sp, species, totalres)
+head(d1)
+save(d1, file = "data_raw/totalres.Rdata")
 
-precis(m) # shows an increase of 0.53km/hour for chinook than for white sturgeon.  But that's just in 2013, when there were many more chn than white sturgeon.
+chn_model <- map(
+  alist(
+  totalres ~ dnorm(mean = mu, sd = sigma) ,
+  mu <- a + bSp*species,
+  a ~ dnorm(0, 100) ,
+  bSp ~ dnorm(0, 50),
+  sigma ~ dcauchy(0,25)
+), data = d1, start = list(a = 50, sigma = 20))
 
-d1all <- as.data.frame(dp3)
-d1all <- dplyr::filter(d1all, transit_time > 0)
-d1all$dSp <- ifelse(d1all$Sp == "chn", 1, 0)
+intercept_model <- map(
+  alist(
+    totalres ~ dnorm(mean = mu, sd = sigma) ,
+    mu <- a,
+    a ~ dnorm(0, 100) ,
+    sigma ~ dcauchy(0, 25)
+  ), data = d1, start = list(a = 50, sigma = 20)
+)
 
-m1a <- map(flist = alist(
-  rate ~ dnorm(mean = mu, sd = sigma) ,
-  mu <- a + bSp*dSp,
-  a ~ dnorm(0, 10) ,
-  bSp ~ dnorm(0, 1),
-  sigma ~ dunif(0,10)
-),
-start = list(a=1, sigma = 5), data = d1all )
-precis(m1a) # holy shit - when you take all the data into account, being a chn corresponds to a 0.89km/hr increase.
-
+precis(m2)
+precis(m)
+compare(intercept_model, chn_model)
 

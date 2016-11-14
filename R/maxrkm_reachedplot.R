@@ -1,3 +1,10 @@
+library(tidyverse)
+library(ybp)
+library(fishtrackr)
+library(lubridate)
+library(viridis)
+library(beepr)
+
 d <- all69khz_grouped
 
 d2 <- d %>% 
@@ -56,3 +63,43 @@ rkmplot + theme(text = element_text(size = 18),
                 legend.position = "none")
 
 ggsave(filename = "figures/maxrkmplot.jpg", width = 8, height = 5, units = "in")
+
+head(maxsum)
+
+ggplot(maxsum, aes(x = maxrkm_reached)) + geom_density(aes(color = Sp)) + facet_wrap(~detyear)
+
+# Begin modeling #-----------------------------
+detach("package:tidyverse", unload=TRUE)
+detach("package:dplyr", unload=TRUE)
+detach("package:purrr", unload = TRUE)
+
+library(rethinking)
+d1 <- maxsum
+d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
+d1 <- as.data.frame(d1)
+head(d1)
+
+# --  Before running models: need to ask Matt how to handle data constratined above 105?  Center?
+
+m1a <- map(flist = alist(
+  maxrkm_reached ~ dnorm(mean = mu, sd = sigma) ,
+  mu <- a + bSp*dSp,
+  a ~ dnorm(0, 10) ,
+  bSp ~ dnorm(0, 1),
+  sigma ~ dunif(0,10)
+),
+start = list(a=1, sigma = 5), data = d1 )
+
+precis(m1a) # shows an increase of 0.53km/hour for chinook than for white sturgeon.  But that's just in 2013, when there were many more chn than white sturgeon.
+
+m1int <- map(flist = alist(
+  rate ~ dnorm(mean = mu, sd = sigma) ,
+  mu <- a,
+  a ~ dnorm(0, 10) ,
+  sigma ~ dunif(0,10)
+),
+start = list(a=1, sigma = 5), data = d1 )
+
+
+compare(m1a, m1int)
+

@@ -178,13 +178,67 @@ $(document).ready(function () {
 <p>First and Last Detection Locations By Year</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6NH0sInJkZiI6Ikg0c0lBQUFBQUFBQUExMVJQVS9ETUJDOTJFa2hsb0JLL1FQOGdXYm94QXlNVEoyNklUZE5TOERZbGUwS1JuNTQxZlJzM1lrMmd6L3UrZDI5ZStmbDYycWhWZ29BQkVoWmdKQjRMUVZ1QlpSUXAvTVhRTTR5QVdDYVh1bmg5dm5sL2RQMU5sSmNjN3dnWVBMV2g3V3pGS2xsaUo0U0FPNXlJWUFLMTJOV3l3Slh5bFZyZEFpa3lxRGE2S2licmRmZjNaaHVFV082SUxERUV0eWdOSzRkNWRUZS9UU2NsM29TZjdnTnczREU0elFpMzdoOTdKMUZxcGhSNjVlZEZYNEVQQnhzS3IyWnR4OEgrelYvU3QyVFZTQzVnc2JBZHhxQkhLaFV4YVBzN0s2M0hUczFldDBaQ3U3UlFuYlE3UDMvWnloRVF4TmQxTXhUclRPTVpHOXdPZ00rNjArbS9RRUFBQT09In0= -->
-<div data-pagedtable>
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["last"],"name":[1],"type":["chr"],"align":["left"]},{"label":["loc"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"BC_joint","2":"5"},{"1":"BC_joint2","2":"32"},{"1":"Lisbon","2":"1"},{"1":"Rstr_joint","2":"2"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
-  </script>
-</div>
-<!-- rnb-frame-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmwgPC0gc3BsaXQoZDIsIGFzLmZhY3RvcihkMiRkZXR5ZWFyKSlcblxucmFuZ2UoZmwkYDIwMTFgJERhdGVUaW1lVVRDKVxuXG5mbDExIDwtIGZsJGAyMDExYCAlPiUgXG4gIGdyb3VwX2J5KFRhZ0lEKSAlPiUgXG4gIGFycmFuZ2UoRGF0ZVRpbWVVVEMpICU+JSBcbiAgc3VtbWFyaXNlKGZpcnN0ID0gU3RhdGlvbltEYXRlVGltZVVUQyA9PSBtaW4oRGF0ZVRpbWVVVEMpXSxcbiAgICAgICAgICAgIGxhc3QgPSBTdGF0aW9uW0RhdGVUaW1lVVRDID09IG1heChEYXRlVGltZVVUQyldKVxuXG5mbDExICU+JSBcbiAgZ3JvdXBfYnkobGFzdCkgJT4lIFxuICBzdW1tYXJpc2UobG9jID0gbigpKSBcblxuIyBpbiAyMDExLCBvbmx5IDEgZmlzaCBkaXNhcHBlYXJlZCBpbiB0aGUgWUIuICBUb3RhbCBvZiA1IGZpc2ggbGFzdCBkZXRlY3RlZCBpbiB5YnA7IGxlYXZlcyA2MiBmaXNoIHRoYXQgbWFkZSBpdCBvdXQuXG5cbmZsMTJ3c3QgPC0gZmwkYDIwMTJgICU+JSBcbiAgZmlsdGVyKFNwID09IFwid3N0XCIpICU+JSBcbiAgZ3JvdXBfYnkoVGFnSUQpICU+JSBcbiAgYXJyYW5nZShEYXRlVGltZVVUQykgJT4lIFxuICBmaWx0ZXIoIWR1cGxpY2F0ZWQoRGF0ZVRpbWVVVEMpKSAlPiUgXG4gIHN1bW1hcmlzZShmaXJzdCA9IFN0YXRpb25bRGF0ZVRpbWVVVEMgPT0gbWluKERhdGVUaW1lVVRDKV0sXG4gICAgICAgICAgICBsYXN0ID0gU3RhdGlvbltEYXRlVGltZVVUQyA9PSBtYXgoRGF0ZVRpbWVVVEMpXSlcblxuZmwxMndzdCAlPiUgXG4gIGdyb3VwX2J5KGxhc3QpICU+JSBcbiAgc3VtbWFyaXNlKGxvYyA9IG4oKSkgXG4jIGluIDIwMTIsIDMgZmlzaCBsYXN0IGRldGVjdGVkIGFib3ZlIEJDOyBoYXZlIHRvIGZpZ3VyZSBvdXQgdGhlIHRvdGFsIG51bWJlciBvZiBmaXNoIGluIDIwMTIgd3N0XG5cbmQyICU+JSBcbiAgZ3JvdXBfYnkoZGV0eWVhciwgU3ApICU+JSBcbiAgc3VtbWFyaXNlKG5maXNoID0gbGVuKFRhZ0lEKSlcblxuIyBTbyBvdXQgb2YgMjIgZmlzaCB0aGF0IGNhbWUgYmFjayBpbiBmYWxsIG9mIDIwMTIsIDE5IFwibWFkZSBpdCBvdXRcIlxuXG5mbDEyY2huIDwtIGZsJGAyMDEyYCAlPiUgXG4gIGZpbHRlcihTcCA9PSBcImNoblwiKSAlPiUgXG4gIGdyb3VwX2J5KFRhZ0lEKSAlPiUgXG4gIGFycmFuZ2UoRGF0ZVRpbWVVVEMpICU+JSBcbiAgZmlsdGVyKCFkdXBsaWNhdGVkKERhdGVUaW1lVVRDKSkgJT4lIFxuICBzdW1tYXJpc2UoZmlyc3QgPSBTdGF0aW9uW0RhdGVUaW1lVVRDID09IG1pbihEYXRlVGltZVVUQyldLFxuICAgICAgICAgICAgbGFzdCA9IFN0YXRpb25bRGF0ZVRpbWVVVEMgPT0gbWF4KERhdGVUaW1lVVRDKV0pXG5cbmZsMTJjaG4gJT4lIFxuICBncm91cF9ieShsYXN0KSAlPiUgXG4gIHN1bW1hcmlzZShsb2MgPSBuKCkpIFxuIyAzIENoaW5vb2sgbWFkZSBpdCBvdXRcblxuZmwxM3dzdCA8LSBmbCRgMjAxM2AgJT4lIFxuICBmaWx0ZXIoU3AgPT0gXCJ3c3RcIikgJT4lIFxuICBncm91cF9ieShUYWdJRCkgJT4lIFxuICBhcnJhbmdlKERhdGVUaW1lVVRDKSAlPiUgXG4gIGZpbHRlcighZHVwbGljYXRlZChEYXRlVGltZVVUQykpICU+JSBcbiAgc3VtbWFyaXNlKGZpcnN0ID0gU3RhdGlvbltEYXRlVGltZVVUQyA9PSBtaW4oRGF0ZVRpbWVVVEMpXSxcbiAgICAgICAgICAgIGxhc3QgPSBTdGF0aW9uW0RhdGVUaW1lVVRDID09IG1heChEYXRlVGltZVVUQyldKVxuXG5mbDEzd3N0ICU+JSBcbiAgZ3JvdXBfYnkobGFzdCkgJT4lIFxuICBzdW1tYXJpc2UobG9jID0gbigpKSBcbmBgYCJ9 -->
+<pre class="r"><code>fl &lt;- split(d2, as.factor(d2$detyear))
+
+range(fl$`2011`$DateTimeUTC)
+
+fl11 &lt;- fl$`2011` %&gt;% 
+  group_by(TagID) %&gt;% 
+  arrange(DateTimeUTC) %&gt;% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl11 %&gt;% 
+  group_by(last) %&gt;% 
+  summarise(loc = n()) 
+
+# in 2011, only 1 fish disappeared in the YB.  Total of 5 fish last detected in ybp; leaves 62 fish that made it out.
+
+fl12wst &lt;- fl$`2012` %&gt;% 
+  filter(Sp == &quot;wst&quot;) %&gt;% 
+  group_by(TagID) %&gt;% 
+  arrange(DateTimeUTC) %&gt;% 
+  filter(!duplicated(DateTimeUTC)) %&gt;% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl12wst %&gt;% 
+  group_by(last) %&gt;% 
+  summarise(loc = n()) 
+# in 2012, 3 fish last detected above BC; have to figure out the total number of fish in 2012 wst
+
+d2 %&gt;% 
+  group_by(detyear, Sp) %&gt;% 
+  summarise(nfish = len(TagID))
+
+# So out of 22 fish that came back in fall of 2012, 19 &quot;made it out&quot;
+
+fl12chn &lt;- fl$`2012` %&gt;% 
+  filter(Sp == &quot;chn&quot;) %&gt;% 
+  group_by(TagID) %&gt;% 
+  arrange(DateTimeUTC) %&gt;% 
+  filter(!duplicated(DateTimeUTC)) %&gt;% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl12chn %&gt;% 
+  group_by(last) %&gt;% 
+  summarise(loc = n()) 
+# 3 Chinook made it out
+
+fl13wst &lt;- fl$`2013` %&gt;% 
+  filter(Sp == &quot;wst&quot;) %&gt;% 
+  group_by(TagID) %&gt;% 
+  arrange(DateTimeUTC) %&gt;% 
+  filter(!duplicated(DateTimeUTC)) %&gt;% 
+  summarise(first = Station[DateTimeUTC == min(DateTimeUTC)],
+            last = Station[DateTimeUTC == max(DateTimeUTC)])
+
+fl13wst %&gt;% 
+  group_by(last) %&gt;% 
+  summarise(loc = n()) </code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
