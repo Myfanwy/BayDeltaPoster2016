@@ -1,3 +1,4 @@
+
 load("data_tidy/fishpaths11-15.Rdata") #generates object d3; this is just all the Yolo Bypass detections for all tagged fish through fall chn 2015
 library(lubridate)
 library(dplyr)
@@ -64,16 +65,16 @@ ggplot(esc2, aes(x = detyear, y = count, fill = variable)) +
    geom_bar(stat = 'identity', color = "black", width = 0.5, position = "stack") +
   scale_y_continuous(expand = c(0, 0.3), limits = c(0, 55)) +
   scale_fill_manual(values = c("#440154FF" , "white", "gray40", "#FDE725FF")) +
-  labs(y = "Count") +
+  labs(y = "Count", title = "Successful Bypass Exits by Species and Year") +
   coord_flip() +
-   theme(text = element_text(size = 18),
-        axis.text.x = element_text(size = 14),
+   theme(text = element_text(size = 24),
+        axis.text = element_text(size = 18),
         axis.title.y = element_blank(),
         plot.title = element_text(hjust = 0.5),
         panel.spacing = unit(15, "points"),
         legend.position = "none")
 
-ggsave(filename = "figures/escapement.jpg", width = 12, height = 5.5)
+ggsave(filename = "figures/escapement.jpg", width = 12, height = 5.5, units = "in")
 
 # Wrap by year instead
 ggplot(esc2, aes(x = species, y = count, fill = variable)) + 
@@ -88,16 +89,19 @@ ggplot(esc2, aes(x = species, y = count, fill = variable)) +
         plot.title = element_text(hjust = 0.5),
         legend.position = "none")
 
-# Try w/ geom_ribbon
-ggplot(esc2, aes(x = detyear, y = count, fill = variable)) + 
-  geom_ribbon(aes(fill = variable, color = variable, ymin = 0, ymax = count), stat = "identity", alpha = 0.2) +
-  facet_wrap(~species, scales = "free_y") +
-  labs(y = "Count") +
+# For IEP:
+esc2 <- filter(esc2, species == 'wst')
+ggplot(esc2, aes(x = detyear, y = count, fill = variable)) +
+  geom_bar(stat = 'identity', aes(fill = variable)) +
+  coord_flip() +
+#  scale_fill_viridis(discrete = TRUE) +
+  labs(x = "Detection Year", y = "Count", title = "White Sturgeon Exits from the Yolo Bypass by Year") +
+  theme_minimal() +
   theme(text = element_text(size = 16),
-        axis.text.x = element_text(size = 14),
-        axis.title.x = element_blank(),
-        plot.title = element_text(hjust = 0.5))
+        axis.text = element_text(size = 12)) +
+  scale_fill_discrete(guide = guide_legend(title = NULL))
 
+ggsave(filename = "figures/IEP/wst_exitsbyyear.jpg", width = 10, height = 5.5, units = "in")
 
 
 #  Begin modeling
@@ -177,7 +181,14 @@ lines(1:2, pred.p)
 shade(pred.p.PI, 1:2)
 
 ## Using the UCB admit template:
+detach("package:dplyr", unload = TRUE)
 library(rethinking)
+
+# to find the absolute probability of a chinook salmon escaping, take the logistic of the difference of the chinook parameter minus the white sturgeon parameter.
+
+# to find the RELATIVE probability, do the whole difference in posterior density estimates (below).  Essentially translates to "chinook salmon have 33% of the probability that white sturgeon have to escape".
+logistic(3.14 - 2.65)
+
 head(esc)
 esc$chn <- ifelse(esc$species == "chn", 1, 0)
 esc <- as.data.frame(esc)
@@ -190,6 +201,8 @@ m <- map(
   bchn ~ dnorm(0, 10)
 ), 
 data = esc)
+
+precis(m, prob = 0.95)
 
 m2 <- map(
   alist(

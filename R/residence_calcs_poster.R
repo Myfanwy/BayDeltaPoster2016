@@ -94,18 +94,33 @@ res <- filter(res, detyear != "2011 - 2012")
 
 resplot <- ggplot(res, aes(x = Sp, y = totalres)) + 
   geom_violin(alpha = 0.4, scale = "count") + 
-  geom_jitter(aes(color = Sp), size = 3, width= 0.5,    alpha = 0.7) + 
+  geom_jitter(aes(color = Sp), size = 3, width= 0.4,    alpha = 0.7) + 
   scale_color_viridis(discrete = TRUE, option = "D") +
   facet_wrap(~detyear, nrow = 1, labeller = label_value) +
   labs(x = "", y = "Residence in Days", title = "Residence Time by Species and Year")
 
-resplot + theme(text = element_text(size = 18),
+resplot + theme(text = element_text(size = 20),
                 axis.text.x = element_blank(), axis.ticks = element_blank(),
                  plot.title = element_text(hjust = 0.5),
                  legend.position = "none")
 
-ggsave(filename = "figures/resplot.jpg", width = 8, height = 5, units = "in")
+ggsave(filename = "figures/resplot.jpg", width = 8.8, height = 8, units = "in")
 
+
+## For IEP conference
+
+res <- filter(res, Sp == "wst")
+head(res)
+
+ggplot(res, aes(x = detyear, y = totalres)) + 
+  geom_boxplot(alpha = 0.5, outlier.colour = 'white', outlier.fill = 'white') + 
+  geom_jitter(aes(color = detyear), size = 3, width = 0.15, alpha = 0.8, show.legend = FALSE) +
+  scale_fill_viridis(discrete = TRUE, option = "D") +
+ # facet_wrap(~detyear, nrow = 1, labeller = label_value, scales = 'free_x') +
+  labs(x = "", y = "Residence in Days", title = "White Sturgeon Residence Time in the Yolo Bypass, 2012 - 2016") +
+  theme_minimal()
+
+ggsave(filename = 'figures/IEP/wstresidence_by_year.jpg', width = 10, height = 5.5, units = 'in')
 
 # Summary table for poster
 restab <- res %>% 
@@ -117,6 +132,8 @@ write.csv(restab, file = "data_tidy/restab.csv")
 # begin modeling
 head(res)
 d1 <- filter(res, detyear != "2011", totalres > 0)
+# or
+head(d1)
 detach("package:dplyr", unload = TRUE)
 library(rethinking)  
 
@@ -138,6 +155,7 @@ d1 <- dplyr::select(d1, detyear, TagID, Sp, species, totalres)
 head(d1)
 save(d1, file = "data_raw/totalres.Rdata")
 
+
 chn_model <- map(
   alist(
   totalres ~ dnorm(mean = mu, sd = sigma) ,
@@ -156,7 +174,9 @@ intercept_model <- map(
   ), data = d1, start = list(a = 50, sigma = 20)
 )
 
-precis(m2)
+precis(chn_model, prob = 0.95)
 precis(m)
 compare(intercept_model, chn_model)
+
+save(chn_model, intercept_model, file = "residence_models.Rdata")
 

@@ -1,5 +1,6 @@
 #load("../data_tidy/fishpaths11-15.Rdata") #generates object d3; this is just all the Yolo Bypass detections for all tagged fish through fall chn 2015
 library(lubridate)
+library(dplyr)
 ## filter out tag day detections #-------------
 d3 <- all69khz_grouped
 head(d3)
@@ -61,34 +62,35 @@ chn_arrivals <- ggplot(chn_arrs, aes(x = hour_arr, y = n)) +
   geom_bar(stat = "identity", fill = "#440154FF") + 
   coord_polar(start = 0) + 
   ylim(c(0, 125)) +
-  facet_wrap(~detyear, nrow = 4, labeller = label_value) +
-  labs(x = "", y = "")
+  facet_wrap(~detyear, nrow = 1, labeller = label_value) +
+  labs(x = NULL, y = NULL)
 
-chn_arrivals <- chn_arrivals + theme(text = element_text(size = 18),
+chn_arrivals <- chn_arrivals + theme(text = element_text(size = 24),
                      plot.title = element_text(hjust = 0.5),
-                     axis.text.x = element_text(size = 20),
+                     axis.text.x = element_text(size = 26),
                      legend.position = "none",
-                     plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
-                     panel.spacing = unit(3, "points"))
+                     plot.margin = unit( c(0,0,0,0), "in" ),
+                     panel.spacing = unit(0.25, "in"))
 
 chn_arrivals
-ggsave(chn_arrivals, filename = "figures/chnarrs_plot.jpg", width = 4, height = 14, units = "in")
+
+ggsave(chn_arrivals, filename = "figures/chnarrs_plot.jpg", width = 12, units = "in", limitsize = FALSE)
 
 chn_departures <- ggplot(chn_deps, aes(x = hour_dep, y = n)) + 
   geom_bar(stat = "identity", fill = "#440154FF") + 
   coord_polar(start = 0) +
   ylim(c(0, 125)) +
-  facet_wrap(~detyear, nrow = 4, labeller = label_value) +
+  facet_wrap(~detyear, nrow = 1, labeller = label_value) +
   labs(x = "", y = "")
 
-chn_departures <- chn_departures + theme(text = element_text(size = 18),
+chn_departures <- chn_departures + theme(text = element_text(size = 24),
                        plot.title = element_text(hjust = 0.5),
                        legend.position = "none",
-                       axis.text.x = element_text(size = 20),
-                       plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
-                       panel.spacing = unit(3, "points"))
+                       axis.text.x = element_text(size = 26),
+                       plot.margin = unit( c(0,0,0,0), "in" ),
+                       panel.spacing = unit(0.25, "in"))
 
-ggsave(chn_departures, filename = "figures/chndeps_plot.jpg", width = 4, height = 14, units = "in")
+ggsave(chn_departures, filename = "figures/chndeps_plot.jpg", width = 12, units = "in", limitsize = FALSE)
 
 
 # wst ----------------------------------
@@ -106,17 +108,17 @@ wst_arrs <- f %>%
 wst_arrivals <- ggplot(wst_arrs, aes(x = hour_arr, y = n)) + 
   geom_bar(stat = "identity", fill = "#FDE725FF") + 
   coord_polar(start = 0) + 
-  facet_wrap(~detyear, nrow = 4, labeller = label_value) +
+  facet_wrap(~detyear, nrow = 1, labeller = label_value) +
   labs(x = "", y = "")
 
-wst_arrivals <- wst_arrivals + theme(text = element_text(size = 18),
-                                     axis.text.x = element_text(size = 20),
+wst_arrivals <- wst_arrivals + theme(text = element_text(size = 24),
+                                     axis.text.x = element_text(size = 26),
                      plot.title = element_text(hjust = 0.5),
                      legend.position = "none",
-                     plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
-                     panel.spacing = unit(3, "points"))
+                     plot.margin = unit( c(0,0,0,0), "in" ),
+                     panel.spacing = unit(0.25, "in"))
 
-ggsave(wst_arrivals, filename = "figures/wstarrs_plot.jpg", width = 4, height = 14, units = "in")
+ggsave(wst_arrivals, filename = "figures/wstarrs_plot.jpg", width = 12, units = "in", limitsize = FALSE)
 
 
 
@@ -124,17 +126,17 @@ wst_departures <- ggplot(wst_deps, aes(x = hour_dep, y = n)) +
   geom_bar(stat = "identity", fill = "#FDE725FF") + 
   coord_polar(start = 0) +
   ylim(c(0, 125)) +
-  facet_wrap(~detyear, nrow = 4, labeller = label_value) +
+  facet_wrap(~detyear, nrow = 1, labeller = label_value) +
   labs(x = "", y = "")
 
-wst_departures <- wst_departures + theme(text = element_text(size = 18),
-                                         axis.text.x = element_text(size = 20),
+wst_departures <- wst_departures + theme(text = element_text(size = 24),
+                                         axis.text.x = element_text(size = 26),
                        plot.title = element_text(hjust = 0.5),
                        legend.position = "none",
-                       plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
-                       panel.spacing = unit(3, "points"))
+                       plot.margin = unit( c(0,0,0,0), "in" ),
+                       panel.spacing = unit(0.25, "in"))
 
-ggsave(wst_departures, filename = "figures/wstdeps_plot.jpg", width = 4, height = 14, units = "in")
+ggsave(wst_departures, filename = "figures/wstdeps_plot.jpg", width = 12, units = "in", limitsize = FALSE)
 
 
 # do white sturgeon just have more arrivals/departures?
@@ -160,6 +162,7 @@ d1$dSp <- ifelse(d1$Sp == "chn", 1, 0)
 d1 <- as.data.frame(d1)
 range(d1$narrs)
 str(d1)
+head(d1)
 
 chn_model <- map(
   alist(
@@ -170,6 +173,7 @@ chn_model <- map(
     sigma ~ dcauchy(0,25)
   ), data = d1, start = list(a = 50, sigma = 30))
 
+precis(chn_model, prob = 0.95)
 
 intc_model <- map(
   alist(

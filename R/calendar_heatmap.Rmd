@@ -3,9 +3,6 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -132,18 +129,33 @@ densmap$detyear <- factor(densmap$detyear, labels = c("2011-2012",
                                                       "2013-2014",
                                                       "2014-2015",
                                                       "2015-2016"))
-p <- ggplot(densmap, aes(x = week, y = wday, fill = Sp)) + 
+
+# IEP plot just wst for Naoaki, 2/16/17:
+densmap2 <- filter(densmap, Sp == "wst")
+
+p <- ggplot(densmap2, aes(x = week, y = wday, fill = nfish)) + 
     
-    geom_tile(colour = "white", alpha = 0.6) + 
+    geom_tile(colour = "white") + 
   
-    scale_fill_manual(values = c("blue", "yellow")) +
+    scale_fill_viridis(breaks = c(1, 5, 10, 15, 20, 30, 40), option = "C") +
   
-    facet_wrap(~detyear, ncol = 1, labeller = label_value)
+    facet_wrap(~detyear, ncol = 1, labeller = label_value) +
+  guides(fill = guide_legend(title = "Number \nof \nIndividuals",
+                             ncol = 1))
 
-p + labs(title = "Presence in the Yolo Bypass By Species and Detection Year", x = " ",
-         y = "Weekday") + theme(axis.text.x = element_blank(),
-                                axis.ticks.x = element_blank())
+p <- p + labs(title = "White Sturgeon Presence in the Yolo Bypass By Detection Year", x = "Week of the Year",
+         y = "Weekday") +
+          theme(axis.title.x = element_text(size = 12),
+                axis.text.y = element_blank(),
+                legend.title = element_text(size = 8),
+                axis.ticks.y = element_blank()) +
+  scale_x_continuous(breaks = c(1, 10, 20, 30, 40, 50), labels = c("Jan", "Mar", "May", "Jul", "Oct", "Dec"),
+                     expand = c(0,0))
+p
 
+
+
+ggsave(p, filename = "figures/IEP/calendarwst_plot.jpg", width = 10, height = 5.5, units = "in")
 # plot by number of fish in the system:
 
 ggplot(densmap, aes(x = week, y = wday, group = Sp, fill = nfish)) + 
